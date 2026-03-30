@@ -5,6 +5,7 @@ from enum import Enum
 
 if TYPE_CHECKING:
     from src.drone import Drone
+    from src.connection import Connection
 
 
 class ZoneType(Enum):
@@ -12,7 +13,7 @@ class ZoneType(Enum):
 
     NORMAL = "normal"          # cost: 1
     RESTRICTED = "restricted"  # cost: 2
-    BLOCKED = "blocked"        # cost: inf
+    BLOCKED = "blocked"        # cost: np.inf
     PRIORITY = "priority"      # cost: 1, has priority
 
 
@@ -22,10 +23,10 @@ class Zone:
             self,
             name: str,
             zone_type: ZoneType,
+            max_drones: int,
             color: str | None,
             x: int,
             y: int,
-            max_drones: int,
        ) -> None:
 
         self.name = name
@@ -34,6 +35,7 @@ class Zone:
         self.x = x
         self.y = y
         self.max_drones = max_drones
+        self.connections: list[Connection] = []
         self.current_drones: list[Drone] = []
 
     def movement_cost(self) -> int:

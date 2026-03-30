@@ -30,7 +30,7 @@ class Drone:
         self.drone_id = drone_id
         self.current_zone = current_zone
         self.current_connection = current_connection
-        self.turns_in_transit = turns_in_transit     # countdown per restricted: 1 o 0
+        self.turns_in_transit = turns_in_transit     # 1 o 0 se restricted
         self.state: DroneState = DroneState.WAITING  # "waiting" | "moving" | "in_transit" | "arrived"
 
     def is_arrived(self) -> bool:

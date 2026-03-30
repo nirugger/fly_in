@@ -11,10 +11,18 @@ class Graph:
             self,
             zones: dict[str, Zone],
             connections: list[Connection],
-            _adjacency: dict[str, list[Connection]],
             start: Zone,
             end: Zone
        ) -> None:
 
-    def get_neighbors(self, zone: Zone) -> list[tuple[Zone, Connection]]: ...
-    def get_connection(self, a: Zone, b: Zone) -> Connection | None: ...
+        self.zones = zones
+        self.connections = connections
+        self.start = start
+        self.end = end
+        self.grid: dict[Zone, list[Connection]]
+
+    def get_neighbors(self, zone: Zone) -> list[tuple[Zone, Connection]]:
+        ...
+
+    def get_connection(self, a: Zone, b: Zone) -> Connection | None:
+        ...
