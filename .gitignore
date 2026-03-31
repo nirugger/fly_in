@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+env/
+.venv/
+
+# uv
+.python-version
+.cache/
+
+# Project stuff
+data/output/
+
+# OS
+.DS_Store
+Thumbs.db
