@@ -12,9 +12,75 @@ class ParseError(Exception):
             line_num: int,
             message: str
        ) -> None:
+        self.configuration = self.manual()
 
         super().__init__(
             "[ERROR]: "
+            f"line {line_num}: {message}"
+            f"\n\n{self.configuration}\n\n"
+        )
+
+    def manual(self):
+        return (
+         "╔═══════════════════════════════════════════════════════════════╗\n"
+         "║ MANUAL FOR A CORRECT USAGE OF MAPFILE CONFIGURATION : READ IT ║\n"
+         "╚═══════════════════════════════════════════════════════════════╝\n"
+         "                                                                 \n"
+         "╔═══════════════════════ EXPECTED FORMAT FOR EACH LINE TYPE ════╗\n"
+         "║ nb_drones: number                                             ║\n"
+         "║ hub: name x y [metadata=value]                                ║\n"
+         "║ start_hub: name x y [metadata=value]                          ║\n"
+         "║ end_hub: name x y [metadata=value]                            ║\n"
+         "║ connection: zone1-zone2 [metadata=value]                      ║\n"
+         "╚═══════════════════════════════════════════════════════════════╝\n"
+         "                                                                 \n"
+         "╔════════════════════════════════════════ RULES AND CONTEXT ════╗\n"
+         "║ 'nb_drones: number'                                           ║\n"
+         "║ * represents the total number of drones in the map            ║\n"
+         "║ - it must be the first non-comment line of the mapfile;       ║\n"
+         "║ - there must be exatly one 'nb_drones:' line in the mapfile;  ║\n"
+         "║ - 'number' must be a valid greater-than-zero integer          ║\n"
+         "║                                                               ║\n"
+         "║ 'hub: name x y [metadata=value]'                              ║\n"
+         "║ 'start_hub: name x y [metadata=value]'                        ║\n"
+         "║ 'end_hub: name x y [metadata=value]'                          ║\n"
+         "║ * represent nodes in the map                                  ║\n"
+         "║ * has name, coordinates, optional metadatas                   ║\n"
+         "║ - there must be exactly one 'start_hub:' line in the mapfile  ║\n"
+         "║ - there must be exactly one 'end_hub:' line in the mapfile    ║\n"
+         "║ - 'name' must be unique for each hub.                         ║\n"
+         "║ - 'name' can use any valid characters but dashes and spaces   ║\n"
+         "║ - 'x' and 'y' must be valid positive integers                 ║\n"
+         "║ - 'metadata=value' can be optionally selected as follows:     ║\n"
+         "║ - 'zone' = 'normal' | 'blocked' | 'restricted' | 'priority'   ║\n"
+         "║ - 'max_drones' = 'number' (greater-than-zero integer)         ║\n"
+         "║ - 'color' = 'any valid string'                                ║\n"
+         "║ - multiple metadatas must be separated with spaces            ║\n"
+         "║ - 'start_hub:' and 'end_hub:' will set 'max_drone' value to   ║\n"
+         "║   'nb_drones' if needed.                                      ║\n"
+         "║                                                               ║\n"
+         "║ 'connection: zone1-zone2'                                     ║\n"
+         "║ * represents an edge in the map                               ║\n"
+         "║ - 'zone1' and 'zone2' must be a valid 'name' value            ║\n"
+         "║ - 'zone1' and 'zone2' must not have the same name             ║\n"
+         "║ - there cannot be duplicates connections (connection: a-b is  ║\n"
+         "║   considered a duplicate of b-a                               ║\n"
+         "║ - 'metadata=value' can be optionally selected as follows:     ║\n"
+         "║ - 'max_link_capacity' = 'number' (greater-than-zero integer)  ║\n"
+         "╚═══════════════════════════════════════════════════════════════╝\n"
+        )
+
+
+class ParseWarning(Exception):
+
+    def __init__(
+            self,
+            line_num: int,
+            message: str
+       ) -> None:
+
+        super().__init__(
+            "[WARNING]: "
             f"line {line_num}: {message}"
         )
 
@@ -32,7 +98,15 @@ class Parser:
         self.zones: dict[str, dict[str, str | int]] = {}
         self.connections: list[dict[str, str | int]] = []
 
-    def parse(self) -> dict:
+    def parse(
+            self
+       ) -> dict[
+                str, int | dict[
+                               str, dict[
+                                        str, str | int]]
+                         | list[
+                               dict[
+                                   str, str | int]]]:
         self._read_file()
         self._parse_lines()
         self._validate()
@@ -102,20 +176,21 @@ class Parser:
         valid_zone_type = ["normal", "blocked", "restricted", "priority"]
         special_hub = ["start_hub:", "end_hub:"]
 
-        raw_data = line.split('[')
+        data_metadata = line.split('[')
 
-        if len(raw_data) > 2:
+        if len(data_metadata) > 2:
             raise ParseError(
                 line_num,
-                "Zone data format expected: "
-                "'<type>: <name> <x> <y> <[metadatas=values]>'"
+                "zone data format expected: "
+                "'<type>: <name> <x> <y> "
+                "<[metadata1=value metadata2=value ...]>'"
             )
 
-        data = raw_data[0].split()
+        data = data_metadata[0].split()
         if len(data) != 4:
             raise ParseError(
                 line_num,
-                "Zone data format expected: "
+                "zone data format expected: "
                 "'<type>: <name> <x> <y>'"
             )
 
@@ -129,7 +204,7 @@ class Parser:
             if not c.isprintable() or c.isspace() or c == '-':
                 raise ParseError(
                     line_num,
-                    "Zone name must use any valid character "
+                    "zone name can use any valid character "
                     "BUT dashes and spaces"
                 )
 
@@ -139,12 +214,12 @@ class Parser:
         except ValueError:
             raise ParseError(
                 line_num,
-                "Zone coordinates must be valid integers"
+                "zone coordinates must be valid integers"
             )
 
         metadata = (
-            raw_data[1].rstrip(']').split()
-            if len(raw_data) == 2
+            data_metadata[1].rstrip(']').split()
+            if len(data_metadata) == 2
             else []
         )
 
@@ -174,14 +249,15 @@ class Parser:
 
             elif parts[0] == "max_drones":
                 try:
-                    int(parts[1])
+                    int(parts[1].strip())
                 except ValueError:
+                    print(parts[1])
                     raise ParseError(
                         line_num,
                         "'max_drones' value must be a valid integer"
                     )
 
-                if int(parts[1]) < 1:
+                if int(parts[1].strip()) < 1:
                     raise ParseError(
                         line_num,
                         "'max_drones' value must be a positive integer"
@@ -191,13 +267,19 @@ class Parser:
 
         max_drones = int(meta_dict.get("max_drones", "1"))
         if data[0] in special_hub:
-            if max_drones < self.nb_drones and max_drones != 1:
-                raise ParseError(
-                    line_num,
-                    "max_drones in start_hub and end_hub "
-                    "can't be lesser than nb_drones"
-                )
-            if max_drones == 1:
+            if (meta_dict.get("max_drones")
+                    and max_drones < self.nb_drones):
+                try:
+                    raise ParseWarning(
+                        line_num,
+                        f"'max_drones' value ({max_drones}) "
+                        "for 'start_hub' and 'end_hub' shouldn't be "
+                        f"lesser than 'nb_drones' value ({self.nb_drones})"
+                    )
+                except ParseWarning as e:
+                    print(e)
+
+            if max_drones < self.nb_drones:
                 max_drones = self.nb_drones
 
         self.zones[data[1]] = {
@@ -206,7 +288,7 @@ class Parser:
             "x": x,
             "y": y,
             "max_drones": max_drones,
-            "color": meta_dict.get("color"),
+            "color": meta_dict.get("color", "grey"),
             "is_start": data[0] == "start_hub:",
             "is_end": data[0] == "end_hub:",
         }
@@ -215,20 +297,20 @@ class Parser:
 
         valid_metadata = ["max_link_capacity"]
 
-        raw_data = line.split('[')
+        data_metadata = line.split('[')
 
-        if len(raw_data) > 2:
+        if len(data_metadata) > 2:
             raise ParseError(
                 line_num,
-                "Connection data format expected: "
+                "connection data format expected: "
                 "'<type>: <name1>-<name2> <[metadata=value]>'"
             )
 
-        data = raw_data[0].split()
+        data = data_metadata[0].split()
         if len(data) != 2 or len(data[1].split('-')) != 2:
             raise ParseError(
                 line_num,
-                "Connection data format expected: "
+                "connection data format expected: "
                 "'<type>: <name1>-<name2>'"
             )
 
@@ -236,12 +318,12 @@ class Parser:
         if zone_a == zone_b:
             raise ParseError(
                 line_num,
-                f"can't connect a Zone to itself ({zone_a}-{zone_b})"
+                f"can't connect a zone to itself ({zone_a}-{zone_b})"
             )
 
         metadata = (
-            raw_data[1].rstrip(']').split()
-            if len(raw_data) == 2
+            data_metadata[1].rstrip(']').split()
+            if len(data_metadata) == 2
             else []
         )
 
@@ -295,8 +377,9 @@ class Parser:
                     found_start = True
                     start_hub_line = item["line_num"]
                 else:
+                    err_line = int(item["line_num"])
                     raise ParseError(
-                        item["line_num"],
+                        err_line,
                         "can't be more than 1 occurrence of "
                         "special hub 'start_hub' "
                         f"(first occurrence in line {start_hub_line})"
@@ -307,49 +390,48 @@ class Parser:
                     found_end = True
                     end_hub_line = item["line_num"]
                 else:
+                    err_line = int(item["line_num"])
                     raise ParseError(
-                        item["line_num"],
+                        err_line,
                         "can't be more than 1 occurrence of "
                         "special hub 'end_hub' "
                         f"(first occurrence in line {end_hub_line})"
                     )
-            del item["line_num"]
 
         if not found_start:
             raise ParseError(
-                0,
-                "can't be less than 1 occurrence of "
-                "special hub 'start_hub'"
+                404,
+                "'start_hub' not found."
             )
 
         if not found_end:
             raise ParseError(
-                0,
-                "can't be less than 1 occurrence of "
-                "special hub 'end_hub'"
+                404,
+                "'end_hub' not found."
             )
 
-        zone_names = list(self.zones.keys())
-        connected_zones: list[set[str]] = []
+        connected_zones: list[set[str | int]] = []
         for item in self.connections:
-            if item["zone_a"] not in zone_names:
+            if item["zone_a"] not in self.zones:
+                err_line = int(item["line_num"])
                 raise ParseError(
-                    item["line_num"],
+                    err_line,
                     f"zone '{item['zone_a']}' is not a valid zone"
                 )
 
-            if item["zone_b"] not in zone_names:
+            if item["zone_b"] not in self.zones:
+                err_line = int(item["line_num"])
                 raise ParseError(
-                    item["line_num"],
+                    err_line,
                     f"zone '{item['zone_b']}' is not a valid zone"
                 )
 
             connection_set = {item["zone_a"], item["zone_b"]}
             if connection_set in connected_zones:
+                err_line = int(item["line_num"])
                 raise ParseError(
-                    item["line_num"],
-                    "the same connection must not appear more than once"
+                    err_line,
+                    "the same connection must not appear more than once "
                     "('a-b' and 'b-a' are considered duplicates)"
                 )
             connected_zones.append(connection_set)
-            del item["line_num"]
