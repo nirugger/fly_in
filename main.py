@@ -14,6 +14,12 @@ if __name__ == "__main__":
     try:
         raw_data = parser.parse()
         builder = Builder(raw_data)
+        for key in builder.adjacency.keys():
+            print(f"Zone: {key.name}")
+            for value in builder.adjacency[key]:
+                print("Connected zones: "
+                      f"{value.zone_a.name}, "
+                      f"{value.zone_b.name}")
 
     except ParseError as e:
         print(str(e))

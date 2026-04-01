@@ -21,15 +21,6 @@ class Graph:
         self.start = self._find_start(self.zones)
         self.end = self._find_end(self.zones)
 
-    def init_grid(
-            self,
-            raw_data: dict[str,
-                           int
-                           | dict[str, dict[str, str | int]]
-                           | list[dict[str, str | int]]]
-       ) -> None:
-        pass
-
     def get_neighbors(self, zone: Zone) -> list[tuple[Zone, Connection]]:
         ...
 
