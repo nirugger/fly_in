@@ -24,9 +24,6 @@ class Connection:
         """Return 1 if zone has capacity, 0 if not."""
         return len(self.drones_in_transit) < self.max_link_capacity
 
-    # def get_other(self, zone: Zone) -> Zone:
-    #     return self.zone_a if zone == self.zone_a else self.zone_b
-
     def movement_cost(self, to_zone: Zone) -> int:
         """Calculate movement cost for traversing this Connection.
 

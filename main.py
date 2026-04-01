@@ -1,4 +1,5 @@
 from parser import Parser, ParseError
+from src.builder import Builder
 import sys
 
 
@@ -11,17 +12,8 @@ if __name__ == "__main__":
         sys.exit(1)
     parser = Parser(path)
     try:
-        for key, value in parser.parse().items():
-            if key == 'nb_drones':
-                print(key, value)
-            else:
-                print(f"{key}:")
-                if isinstance(value, dict):
-                    for k, v in value.items():
-                        print(f"{k}: {v}")
-                else:
-                    for e in value:
-                        print(e)
+        raw_data = parser.parse()
+        builder = Builder(raw_data)
 
     except ParseError as e:
         print(str(e))

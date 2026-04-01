@@ -21,17 +21,14 @@ class Drone:
 
     def __init__(
             self,
-            drone_id: int,
-            current_zone: Zone | None,
-            current_connection: Connection | None,
-            turns_in_transit: int,
+            drone_id: int
        ) -> None:
 
         self.drone_id = drone_id
-        self.current_zone = current_zone
-        self.current_connection = current_connection
-        self.turns_in_transit = turns_in_transit     # 1 o 0 se restricted
-        self.state: DroneState = DroneState.WAITING  # "waiting" | "moving" | "in_transit" | "arrived"
+        # self.current_zone = current_zone
+        # self.current_connection = current_connection
+        # self.turns_in_transit = turns_in_transit
+        self.state: DroneState = DroneState.WAITING
 
     def is_arrived(self) -> bool:
         return self.state == DroneState.ARRIVED

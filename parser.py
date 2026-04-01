@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     ...
@@ -17,10 +17,10 @@ class ParseError(Exception):
         super().__init__(
             "[ERROR]: "
             f"line {line_num}: {message}"
-            f"\n\n{self.configuration}\n\n"
+            # f"\n\n{self.configuration}\n\n"
         )
 
-    def manual(self):
+    def manual(self) -> str:
         return (
          "╔═══════════════════════════════════════════════════════════════╗\n"
          "║ MANUAL FOR A CORRECT USAGE OF MAPFILE CONFIGURATION : READ IT ║\n"
@@ -100,13 +100,7 @@ class Parser:
 
     def parse(
             self
-       ) -> dict[
-                str, int | dict[
-                               str, dict[
-                                        str, str | int]]
-                         | list[
-                               dict[
-                                   str, str | int]]]:
+       ) -> dict[str, Any]:
         self._read_file()
         self._parse_lines()
         self._validate()
@@ -132,10 +126,10 @@ class Parser:
 
         for line_num, line in self.lines[1:]:
 
-            if line.startswith(("start_hub:", "end_hub:", "hub:")):
+            if line.startswith(("start_hub: ", "end_hub: ", "hub: ")):
                 self._parse_zone(line_num, line)
 
-            elif line.startswith("connection:"):
+            elif line.startswith("connection: "):
                 self._parse_connection(line_num, line)
 
             else:
@@ -205,7 +199,7 @@ class Parser:
                 raise ParseError(
                     line_num,
                     "zone name can use any valid character "
-                    "BUT dashes and spaces"
+                    "but dashes and spaces"
                 )
 
         try:
@@ -217,10 +211,22 @@ class Parser:
                 "zone coordinates must be valid integers"
             )
 
-        metadata = (
-            data_metadata[1].rstrip(']').split()
+        unsplit_metadata = (
+            data_metadata[1].strip().split(']')
             if len(data_metadata) == 2
             else []
+        )
+
+        if len(unsplit_metadata) == 2:
+            if unsplit_metadata[1] != '':
+                raise ParseError(
+                        line_num,
+                        f"invalid metadata format: '{unsplit_metadata}'"
+                    )
+            unsplit_metadata.remove('')
+
+        metadata = (
+            unsplit_metadata[0].strip().split()
         )
 
         meta_dict = {}
@@ -284,6 +290,7 @@ class Parser:
 
         self.zones[data[1]] = {
             "line_num": line_num,
+            "name": data[1],
             "type": meta_dict.get("zone", "normal"),
             "x": x,
             "y": y,
@@ -297,7 +304,7 @@ class Parser:
 
         valid_metadata = ["max_link_capacity"]
 
-        data_metadata = line.split('[')
+        data_metadata = line.strip().split('[')
 
         if len(data_metadata) > 2:
             raise ParseError(

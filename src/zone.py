@@ -23,18 +23,22 @@ class Zone:
             self,
             name: str,
             zone_type: ZoneType,
-            max_drones: int,
-            color: str | None,
             x: int,
             y: int,
+            is_start: bool,
+            is_end: bool,
+            max_drones: int,
+            color: str | None,
        ) -> None:
 
         self.name = name
         self.zone_type = zone_type
-        self.color = color
         self.x = x
         self.y = y
+        self.is_start = is_start
+        self.is_end = is_end
         self.max_drones = max_drones
+        self.color = color
         self.connections: list[Connection] = []
         self.current_drones: list[Drone] = []
 
