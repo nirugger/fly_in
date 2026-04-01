@@ -101,14 +101,17 @@ class Parser:
     def parse(
             self
        ) -> dict[str, Any]:
-        self._read_file()
-        self._parse_lines()
-        self._validate()
-        return {
-            "nb_drones": self.nb_drones,
-            "zones": self.zones,
-            "connections": self.connections
-        }
+        try:
+            self._read_file()
+            self._parse_lines()
+            self._validate()
+            return {
+                "nb_drones": self.nb_drones,
+                "zones": self.zones,
+                "connections": self.connections
+            }
+        except ParseError as e:
+            print(str(e))
 
     def _read_file(self) -> None:
 
