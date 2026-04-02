@@ -1,22 +1,33 @@
-from parser import Parser, ParseError
+from parser import Parser
 from src.builder import Builder
+from src.graph import Graph
 import sys
 
 
 if __name__ == "__main__":
 
     try:
-        path = sys.argv[1]
-        parser = Parser(path)
+        parser = Parser(Parser.parse_argv(sys.argv))
         raw_data = parser.parse()
-    except Exception as e:
-        print(str(e))
-        print("\nfuck you\n")
+
+    except FileNotFoundError:
+        print("[ERROR]: "
+              "expected usage:\ninsert <map_name> or leave empty")
         sys.exit(1)
+
     builder = Builder(raw_data)
-    for key in builder.adjacency.keys():
-        print(f"Zone: {key.name}")
-        for value in builder.adjacency[key]:
-            print("Connected zones: "
-                  f"{value.zone_a.name}, "
-                  f"{value.zone_b.name}")
+    zones = builder.build_zone_list()
+    graph = Graph(builder.build_adjacency())
+    for zone in zones:
+        print("zone:", str(zone))
+        print("neighbor:", graph.get_neighbors(zone)[0][0].name)
+        print("cost:", graph.get_neighbors(zone)[0][1])
+        print()
+
+    # for key in adjacency:
+    #     print(f"Zone:           '{key.name}'")
+    #     print("Connected with:", end=' ')
+    #     for value in adjacency[key]:
+    #         connected_zone = value.get_other(key)
+    #         print(f"'{connected_zone.name}'", end=' ')
+    #     print('\n')

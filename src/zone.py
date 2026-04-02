@@ -48,15 +48,15 @@ class Zone:
         Returns:
             int: 2 if Zone is RESTRICTED, 1 otherwise.
         """
-        return (self.zone_type == ZoneType.RESTRICTED) + 1
+        return (self.zone_type == "restricted") + 1
 
     def is_accessible(self) -> bool:
         """Return 1 if zone is accessible, 0 if not."""
-        return self.zone_type != ZoneType.BLOCKED
+        return self.zone_type != "blocked"
 
     def has_priority(self) -> bool:
         """Return 1 if zone has priority, 0 if not."""
-        return self.zone_type == ZoneType.PRIORITY
+        return self.zone_type == "priority"
 
     def has_capacity(self) -> bool:
         """Return 1 if zone has capacity, 0 if not."""
@@ -77,3 +77,6 @@ class Zone:
             drone: the Drone to be removed.
         """
         self.current_drones.remove(drone)
+
+    def __str__(self):
+        return self.name

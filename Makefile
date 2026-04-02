@@ -17,7 +17,10 @@ install:
 	@echo "$(GREEN)✓ Dependencies installed.$(RESET)"
 
 run:
-	$(UV) python3 -m main maps/test/parsing_test.txt
+	$(UV) python3 main.py maps/test/parsing_test.txt
+
+test:
+	$(UV) python3 main.py maps/test/parsing_test.txt
 
 debug:
 	$(UV) python3 -m pdb main maps/test/parsing_test.txt

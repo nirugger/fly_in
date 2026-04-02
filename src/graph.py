@@ -1,31 +1,36 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from src.zone import Zone
-    from src.connection import Connection
+from src.zone import Zone
+from src.connection import Connection
+# if TYPE_CHECKING:
 
 
 class Graph:
     def __init__(
             self,
-            raw_data: dict[str,
-                           int
-                           | dict[str, dict[str, str | int]]
-                           | list[dict[str, str | int]]]
+            grid: dict[Zone, list[Connection]]
        ) -> None:
 
-        self.grid: dict[Zone, list[Connection]] = self.init_grid(raw_data)
-        self.zones: list[Zone] = self._init_zones(raw_data)
-        self.connections: list[Connection] = self._init_connections(raw_data)
-        self.start = self._find_start(self.zones)
-        self.end = self._find_end(self.zones)
+        self.grid = grid
+        self._set_pois()
 
-    def get_neighbors(self, zone: Zone) -> list[tuple[Zone, Connection]]:
-        ...
+    def _set_pois(self) -> None:
+        for item in self.grid.keys():
+            if item.is_start:
+                self.start = item
+            if item.is_end:
+                self.end = item
 
-    def get_connection(self, a: Zone, b: Zone) -> Connection | None:
-        ...
+    def get_neighbors(self, zone: Zone) -> list[tuple[Zone, int]]:
+
+        neighbors: list[tuple[Zone, int]] = []
+        for item in self.grid.keys():
+            if item.name == zone.name:
+                for neighbor in self.grid[item]:
+                    neighbors.append((
+                        neighbor.get_other(item),
+                        neighbor.get_other(item).movement_cost(),
+                    ))
+        return neighbors
 
     def __getitem__(self, key):
         return self.grid[key]
