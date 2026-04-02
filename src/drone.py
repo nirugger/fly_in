@@ -5,7 +5,6 @@ from enum import Enum
 
 if TYPE_CHECKING:
     from src.zone import Zone
-    from src.connection import Connection
 
 
 class DroneState(Enum):

@@ -1,4 +1,4 @@
-from parser import Parser
+from parser import Parser, parse_argv
 from src.builder import Builder
 from src.graph import Graph
 import sys
@@ -7,7 +7,7 @@ import sys
 if __name__ == "__main__":
 
     try:
-        parser = Parser(Parser.parse_argv(sys.argv))
+        parser = Parser(parse_argv(sys.argv))
         raw_data = parser.parse()
 
     except FileNotFoundError:

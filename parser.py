@@ -86,6 +86,29 @@ class ParseWarning(Exception):
         )
 
 
+def parse_argv(argv: list[str]) -> str:
+
+    try:
+        path = argv[1]
+
+    except IndexError:
+        print("select map:")
+        print(
+            "0: test\n"
+            "1: linear_path"
+        )
+        choice = input()
+        match choice:
+            case "0":
+                path = "maps/test/parsing_test.txt"
+            case "1":
+                path = "maps/easy/01_linear_path.txt"
+            case _:
+                print("\nfuck you\n")
+                sys.exit(1)
+    return path
+
+
 class Parser:
 
     def __init__(
@@ -98,28 +121,6 @@ class Parser:
         self.nb_drones: int = 0
         self.zones: dict[str, dict[str, str | int]] = {}
         self.connections: list[dict[str, str | int]] = []
-
-    @staticmethod
-    def parse_argv(argv: list[str]) -> str:
-
-        try:
-            path = argv[1]
-        except IndexError:
-            print("select map:")
-            print(
-                "0: test\n"
-                "1: linear_path"
-            )
-            choice = input()
-            match choice:
-                case "0":
-                    path = "maps/test/parsing_test.txt"
-                case "1":
-                    path = "maps/easy/01_linear_path.txt"
-                case _:
-                    print("\nfuck you\n")
-                    sys.exit(1)
-            return path
 
     def parse(
             self

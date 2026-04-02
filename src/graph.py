@@ -32,6 +32,9 @@ class Graph:
                     ))
         return neighbors
 
+    def get_pois(self) -> tuple[Zone, Zone]:
+        return ((self.start, self.end))
+
     def __getitem__(self, key):
         return self.grid[key]
 
