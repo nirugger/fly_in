@@ -25,4 +25,3 @@ if __name__ == "__main__":
             print("neighbor: (none)")
             print("cost: -")
         print()
-

@@ -1,2 +1,2 @@
-class Pathfinder():
+class Pathfinder:
     pass
