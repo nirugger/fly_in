@@ -1,36 +1,27 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
-
-from enum import Enum
-
-if TYPE_CHECKING:
-    from src.zone import Zone
-
-
-class DroneState(Enum):
-    """Enum class for different Drone states."""
-
-    WAITING = "waiting"
-    MOVING = "moving"
-    IN_TRANSIT = "in_transit"
-    ARRIVED = "arrived"
 
 
 class Drone:
 
     def __init__(
             self,
-            drone_id: int
+            drone_id: int,
+            start_zone: str
        ) -> None:
 
         self.drone_id = drone_id
-        # self.current_zone = current_zone
-        # self.current_connection = current_connection
-        # self.turns_in_transit = turns_in_transit
-        self.state: DroneState = DroneState.WAITING
+        self.path: list[tuple[str, int]] = [(start_zone, 0)]
 
-    def is_arrived(self) -> bool:
-        return self.state == DroneState.ARRIVED
+    def position_at_turn(self, t: int) -> str | None:
+        """Return position at turn t, or None if already arrived."""
+        for pos, turn in self.path:
+            if turn == t:
+                return pos
+        return None
 
-    def next_zone(self) -> Zone | None:
-        pass
+    def moved_at_turn(self, t: int) -> bool:
+        if t == 0:
+            return False
+        prev = self.position_at_turn(t - 1)
+        curr = self.position_at_turn(t)
+        return prev != curr and curr is not None

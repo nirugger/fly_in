@@ -1,5 +1,4 @@
 from parser import Parser, parse_argv
-from src.builder import Builder
 from src.graph import Graph
 import sys
 
@@ -15,19 +14,14 @@ if __name__ == "__main__":
               "expected usage:\ninsert <map_name> or leave empty")
         sys.exit(1)
 
-    builder = Builder(raw_data)
-    zones = builder.build_zone_list()
-    graph = Graph(builder.build_adjacency())
-    for zone in zones:
+    graph = Graph.from_raw_data(raw_data)
+    for zone in graph.grid:
+        neighbors = graph.get_neighbors(zone)
         print("zone:", str(zone))
-        print("neighbor:", graph.get_neighbors(zone)[0][0].name)
-        print("cost:", graph.get_neighbors(zone)[0][1])
+        if neighbors:
+            print("neighbor:", neighbors[0][0].name)
+            print("cost:", neighbors[0][1])
+        else:
+            print("neighbor: (none)")
+            print("cost: -")
         print()
-
-    # for key in adjacency:
-    #     print(f"Zone:           '{key.name}'")
-    #     print("Connected with:", end=' ')
-    #     for value in adjacency[key]:
-    #         connected_zone = value.get_other(key)
-    #         print(f"'{connected_zone.name}'", end=' ')
-    #     print('\n')

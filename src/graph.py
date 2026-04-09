@@ -45,6 +45,8 @@ class Graph:
             A fully initialised Graph instance.
         """
         zone_registry: dict[str, Zone] = {}
+        start_zone_name: str = ""
+
         for item in raw_data["zones"].values():
             zone_type = ZoneType.from_str(item["type"])
             if zone_type is ZoneType.BLOCKED:
@@ -59,6 +61,8 @@ class Graph:
                 max_drones=item["max_drones"],
                 color=item["color"],
             )
+            if item["is_start"]:
+                start_zone_name = item["name"]
 
         connections: list[Connection] = []
         for item in raw_data["connections"]:
@@ -81,7 +85,7 @@ class Graph:
         }
 
         drones: list[Drone] = [
-            Drone(drone_id=i)
+            Drone(drone_id=i, start_zone=start_zone_name)
             for i in range(1, raw_data["nb_drones"] + 1)
         ]
 
