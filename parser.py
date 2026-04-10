@@ -1,6 +1,9 @@
+"""Module containing all parsing methhots, parsing errors and Parser class."""
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 import sys
+from src.types import ZoneData, ConnectionData, RawData
+from src.zone import ZoneType
 
 if TYPE_CHECKING:
     ...
@@ -11,15 +14,20 @@ class ParseError(Exception):
     def __init__(
             self,
             line_num: int,
-            message: str
+            message: str,
+            no_line: bool = False
        ) -> None:
         self.configuration = self.manual()
+        self.line_str = self._flag(no_line)
 
         super().__init__(
             "[ERROR]: "
-            f"line {line_num}: {message}"
+            f"{self.line_str}{line_num}: {message}"
             # f"\n\n{self.configuration}\n\n"
         )
+
+    def _flag(self, no_line: bool) -> str:
+        return "line " if not no_line else ""
 
     def manual(self) -> str:
         return (
@@ -110,21 +118,29 @@ def parse_argv(argv: list[str]) -> str:
 
 
 class Parser:
+    """Parser class."""
 
     def __init__(
             self,
             path: str
-       ) -> None:
+    ) -> None:
+        """Init a Parser.
 
+        Args:
+            path (str): the path of the configuration file.
+        """
         self.path = path
         self.lines: list[tuple[int, str]] = []
         self.nb_drones: int = 0
-        self.zones: dict[str, dict[str, str | int]] = {}
-        self.connections: list[dict[str, str | int]] = []
+        self.zones: dict[str, ZoneData] = {}
+        self.connections: list[ConnectionData] = []
 
-    def parse(
-            self
-       ) -> dict[str, Any]:
+    def parse(self) -> RawData:
+        """Parse the lines.
+
+        Returns:
+            RawData: a RawData containing all configuration parsed.
+        """
         try:
             self._read_file()
             self._parse_lines()
@@ -136,9 +152,10 @@ class Parser:
             }
         except ParseError as e:
             print(str(e))
+            sys.exit(1)
 
     def _read_file(self) -> None:
-
+        """Read from configuration file and store data."""
         with open(self.path, 'r') as f:
             self.lines = [
                 (i + 1, line.strip())
@@ -147,7 +164,11 @@ class Parser:
             ]
 
     def _parse_lines(self) -> None:
+        """Parse all lines extracted from the configuration file.
 
+        Raises:
+            ParseError: personalized Error class.
+        """
         first_line_num, first_line = self.lines[0]
         self._parse_nb_drones(first_line_num, first_line)
 
@@ -166,7 +187,15 @@ class Parser:
                 )
 
     def _parse_nb_drones(self, line_num: int, line: str) -> None:
+        """Parse and validate 'nb_drones' line.
 
+        Args:
+            line_num (int): the number of the line.
+            line (str): the line to be parsed.
+
+        Raises:
+            ParseError: personalized Error class.
+        """
         parts = line.split()
 
         if len(parts) != 2 or parts[0] != 'nb_drones:':
@@ -192,9 +221,17 @@ class Parser:
         self.nb_drones = n
 
     def _parse_zone(self, line_num: int, line: str) -> None:
+        """Parse and validate normal and special 'hub' lines.
 
+        Args:
+            line_num (int): the number of the line.
+            line (str): the line to be parsed.
+
+        Raises:
+            ParseError: personalized Error class.
+            ParseWarning: personalized Error class.
+        """
         valid_metadata = ["zone", "color", "max_drones"]
-        valid_zone_type = ["normal", "blocked", "restricted", "priority"]
         special_hub = ["start_hub:", "end_hub:"]
 
         data_metadata = line.split('[')
@@ -202,27 +239,29 @@ class Parser:
         if len(data_metadata) > 2:
             raise ParseError(
                 line_num,
-                "zone data format expected: "
+                "zone line format expected: "
                 "'<type>: <name> <x> <y> "
-                "<[metadata1=value metadata2=value ...]>'"
+                "[<metadata1>=<value> <metadata2>=<value> ...]'"
             )
 
         data = data_metadata[0].split()
         if len(data) != 4:
             raise ParseError(
                 line_num,
-                "zone data format expected: "
+                "zone data expected: "
                 "'<type>: <name> <x> <y>'"
             )
 
         if data[1] in self.zones:
+            original_line = self.zones[data[1]]["line_num"]
             raise ParseError(
                 line_num,
-                f"duplicate zone name '{data[1]}'"
+                (f"duplicate zone name '{data[1]}', "
+                 f"original zone name at line {original_line}")
             )
 
         for c in data[1]:
-            if not c.isprintable() or c.isspace() or c == '-':
+            if c.isspace() or c == '-' or not c.isprintable():
                 raise ParseError(
                     line_num,
                     "zone name can use any valid character "
@@ -273,11 +312,14 @@ class Parser:
                 )
 
             if parts[0] == "zone":
-                if parts[1] not in valid_zone_type:
+                try:
+                    ZoneType(parts[1])
+                except ValueError:
+                    valid = [m.value for m in ZoneType]
                     raise ParseError(
                         line_num,
                         f"invalid zone type: '{parts[1]}'\n"
-                        f"(accepted zone types: {valid_zone_type})"
+                        f"(accepted zone types: {valid})"
                     )
                 if parts[1] == "blocked" and data[0] in special_hub:
                     try:
@@ -328,7 +370,7 @@ class Parser:
         self.zones[data[1]] = {
             "line_num": line_num,
             "name": data[1],
-            "type": meta_dict.get("zone", "normal"),
+            "type": ZoneType(meta_dict.get("zone", "normal")),
             "x": x,
             "y": y,
             "max_drones": max_drones,
@@ -338,7 +380,15 @@ class Parser:
         }
 
     def _parse_connection(self, line_num: int, line: str) -> None:
+        """Parse and validate 'connection' lines.
 
+        Args:
+            line_num (int): the number of the line.
+            line (str): the line to be parsed.
+
+        Raises:
+            ParseError: personalized Error class.
+        """
         valid_metadata = ["max_link_capacity"]
 
         data_metadata = line.strip().split('[')
@@ -410,7 +460,11 @@ class Parser:
         })
 
     def _validate(self) -> None:
+        """Crossed validation of the configuration file.
 
+        Raises:
+            ParseError: personalized Error class.
+        """
         found_start = False
         found_end = False
 
@@ -421,12 +475,11 @@ class Parser:
                     found_start = True
                     start_hub_line = item["line_num"]
                 else:
-                    err_line = int(item["line_num"])
+                    err_line = item["line_num"]
                     raise ParseError(
                         err_line,
-                        "can't be more than 1 occurrence of "
-                        "special hub 'start_hub' "
-                        f"(first occurrence in line {start_hub_line})"
+                        "duplicate 'start_hub' "
+                        f"(original 'start_hub' at line {start_hub_line})"
                     )
 
             if item['is_end']:
@@ -434,45 +487,46 @@ class Parser:
                     found_end = True
                     end_hub_line = item["line_num"]
                 else:
-                    err_line = int(item["line_num"])
+                    err_line = item["line_num"]
                     raise ParseError(
                         err_line,
-                        "can't be more than 1 occurrence of "
-                        "special hub 'end_hub' "
-                        f"(first occurrence in line {end_hub_line})"
+                        "duplicate 'end_hub' "
+                        f"(original 'end_hub' at line {end_hub_line})"
                     )
 
         if not found_start:
             raise ParseError(
                 404,
-                "'start_hub' not found."
+                "'start_hub' not found.",
+                no_line=True
             )
 
         if not found_end:
             raise ParseError(
                 404,
-                "'end_hub' not found."
+                "'end_hub' not found.",
+                no_line=True
             )
 
-        connected_zones: list[set[str | int]] = []
-        for item in self.connections:
-            if item["zone_a"] not in self.zones:
-                err_line = int(item["line_num"])
+        connected_zones: list[set[str]] = []
+        for conn in self.connections:
+            if conn["zone_a"] not in self.zones:
+                err_line = conn["line_num"]
                 raise ParseError(
                     err_line,
-                    f"zone '{item['zone_a']}' is not a valid zone"
+                    f"zone '{conn['zone_a']}' is not a valid zone"
                 )
 
-            if item["zone_b"] not in self.zones:
-                err_line = int(item["line_num"])
+            if conn["zone_b"] not in self.zones:
+                err_line = conn["line_num"]
                 raise ParseError(
                     err_line,
-                    f"zone '{item['zone_b']}' is not a valid zone"
+                    f"zone '{conn['zone_b']}' is not a valid zone"
                 )
 
-            connection_set = {item["zone_a"], item["zone_b"]}
+            connection_set = {conn["zone_a"], conn["zone_b"]}
             if connection_set in connected_zones:
-                err_line = int(item["line_num"])
+                err_line = conn["line_num"]
                 raise ParseError(
                     err_line,
                     "the same connection must not appear more than once "

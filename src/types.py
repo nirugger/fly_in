@@ -1,32 +1,30 @@
-"""Shared type definitions for the fly-in simulation.
-
-All ``TypedDict`` classes used across parser, graph, and zone modules
-are centralised here to avoid circular imports and to provide a single
-source of truth for the shape of parsed data.
-"""
+"""Shared type definitions for the fly-in simulation."""
 from __future__ import annotations
 from typing import TypedDict
+from src.zone import ZoneType
 
 
 class ZoneData(TypedDict):
     """Typed representation of a parsed zone entry.
 
+    Args:
+        TypedDict (_type_): partent TypedDict Class.
+
     Attributes:
-        line_num:   Source line number (for error reporting).
-        name:       Unique zone identifier.
-        type:       Zone type string: 'normal' | 'restricted' |
-                    'priority' | 'blocked'.
-        x:          X coordinate on the grid.
-        y:          Y coordinate on the grid.
-        max_drones: Maximum drones allowed simultaneously.
-        color:      Display colour string (e.g. 'red', 'blue').
-        is_start:   True if this is the start hub.
-        is_end:     True if this is the end hub.
+        line_num (int): source line number for error reporting.
+        name (str): unique zone identifier.
+        type (ZoneType): ZoneType enum member.
+        x (int): X coordinate on the grid.
+        y (int): Y coordinate on the grid.
+        max_drones (int): max drones allowed simultaneously.
+        color (str): display colour string (e.g. 'red', 'blue').
+        is_start (bool): 'True' if this is the start hub.
+        is_end (bool): 'True' if this is the end hub.
     """
 
     line_num: int
     name: str
-    type: str
+    type: ZoneType
     x: int
     y: int
     max_drones: int
@@ -38,10 +36,13 @@ class ZoneData(TypedDict):
 class ConnectionData(TypedDict):
     """Typed representation of a parsed connection entry.
 
+    Args:
+        TypedDict (_type_): parent TypedDict Class.
+
     Attributes:
-        line_num:          Source line number (for error reporting).
-        zone_a:            Name of the first zone endpoint.
-        zone_b:            Name of the second zone endpoint.
+        line_num: Source line number (for error reporting).
+        zone_a: Name of the first zone endpoint.
+        zone_b: Name of the second zone endpoint.
         max_link_capacity: Maximum drones traversing simultaneously.
     """
 
@@ -52,12 +53,15 @@ class ConnectionData(TypedDict):
 
 
 class RawData(TypedDict):
-    """Top-level typed dict returned by ``Parser.parse()``.
+    """Top-level typed representation of a parsed configuration file.
+
+    Args:
+        TypedDict (_type_): parent TypedDict Class.
 
     Attributes:
-        nb_drones:   Total number of drones in the simulation.
-        zones:       Mapping of zone name to its ``ZoneData``.
-        connections: Ordered list of ``ConnectionData`` entries.
+        nb_drones: Total number of drones in the simulation.
+        zones: Mapping of zone name to its 'ZoneData'.
+        connections: Ordered list of 'ConnectionData' entries.
     """
 
     nb_drones: int

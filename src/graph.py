@@ -1,4 +1,5 @@
 """Graph module: holds the network of zones and connections."""
+
 from __future__ import annotations
 from src.zone import Zone, ZoneType
 from src.connection import Connection
@@ -7,24 +8,18 @@ from src.types import RawData
 
 
 class Graph:
-    """Adjacency-list graph of Zone nodes connected by Connection edges.
-
-    The canonical way to build a Graph from parsed map data is via the
-    ``from_raw_data`` classmethod, which guarantees that every Zone and
-    Connection object is created exactly once and shared consistently
-    across the whole structure.
-    """
+    """Adjacency-list graph of Zone (nodes) connected by Connection (edges)."""
 
     def __init__(
             self,
             grid: dict[Zone, list[Connection]],
             drones: list[Drone],
     ) -> None:
-        """Initialise the graph.
+        """Init a Graph.
 
         Args:
-            grid:   Adjacency mapping Zone -> list of its Connections.
-            drones: Fleet of Drone objects for this simulation.
+            grid: adjacency mapping Zone -> list of its Connections.
+            drones: fleet of Drone for this simulation.
         """
         self.grid = grid
         self.drones = drones
@@ -32,28 +27,23 @@ class Graph:
 
     @classmethod
     def from_raw_data(cls, raw_data: RawData) -> "Graph":
-        """Build a Graph (and drone fleet) from the parser's output.
-
-        All Zone and Connection objects are created *once* here and
-        reused everywhere, so identity checks and capacity tracking
-        work correctly throughout the simulation.
+        """Build a Graph and Drone fleet from the parser's output.
 
         Args:
-            raw_data: Dict produced by ``Parser.parse()``.
+            raw_data (RawData): all data needed for a Graph initialization.
 
         Returns:
-            A fully initialised Graph instance.
+            Graph: a fulli initialized Graph instance.
         """
-        zone_registry: dict[str, Zone] = {}
+        zone_dict: dict[str, Zone] = {}
         start_zone_name: str = ""
 
         for item in raw_data["zones"].values():
-            zone_type = ZoneType.from_str(item["type"])
-            if zone_type is ZoneType.BLOCKED:
+            if item["type"] is ZoneType.BLOCKED:
                 continue
-            zone_registry[item["name"]] = Zone(
+            zone_dict[item["name"]] = Zone(
                 name=item["name"],
-                zone_type=zone_type,
+                zone_type=item["type"],
                 x=item["x"],
                 y=item["y"],
                 is_start=item["is_start"],
@@ -65,23 +55,21 @@ class Graph:
                 start_zone_name = item["name"]
 
         connections: list[Connection] = []
-        for item in raw_data["connections"]:
-            zone_a = zone_registry.get(item["zone_a"])
-            zone_b = zone_registry.get(item["zone_b"])
+        for conn in raw_data["connections"]:
+            zone_a = zone_dict.get(conn["zone_a"])
+            zone_b = zone_dict.get(conn["zone_b"])
             if zone_a is None or zone_b is None:
                 continue
             connections.append(Connection(
                 zone_a=zone_a,
                 zone_b=zone_b,
-                max_link_capacity=item["max_link_capacity"],
+                max_link_capacity=conn["max_link_capacity"],
             ))
 
         grid: dict[Zone, list[Connection]] = {
-            zone: [
-                conn for conn in connections
-                if conn.zone_a is zone or conn.zone_b is zone
-            ]
-            for zone in zone_registry.values()
+            zone: [conn for conn in connections
+                   if conn.zone_a is zone or conn.zone_b is zone]
+            for zone in zone_dict.values()
         }
 
         drones: list[Drone] = [
@@ -100,13 +88,13 @@ class Graph:
                 self.end = zone
 
     def get_neighbors(self, zone: Zone) -> list[tuple[Zone, int]]:
-        """Return all zones reachable from *zone* and their movement cost.
+        """Get all reachable Zones from 'zone' and their movement cost.
 
         Args:
-            zone: The Zone whose neighbours are requested.
+            zone (Zone): The Zone whose neighbours are requested.
 
         Returns:
-            List of (neighbor_zone, movement_cost) tuples.
+            list[tuple[Zone, int]]: List of (neighbor_zone, movement_cost).
         """
         neighbors: list[tuple[Zone, int]] = []
         for conn in self.grid.get(zone, []):
@@ -115,15 +103,29 @@ class Graph:
         return neighbors
 
     def get_pois(self) -> tuple[Zone, Zone]:
-        """Return the (start, end) Zone pair.
+        """Get the (start, end) Zone pair.
 
         Returns:
-            Tuple of (start_zone, end_zone).
+            tuple[Zone, Zone]: Tuple of (start_zone, end_zone).
         """
         return (self.start, self.end)
 
     def __getitem__(self, key: Zone) -> list[Connection]:
+        """Get all Connections connected with given Zone 'key'.
+
+        Args:
+            key (Zone): the given Zone.
+
+        Returns:
+            list[Connection]: all Connection connected with 'key'.
+        """
         return self.grid[key]
 
     def __setitem__(self, key: Zone, value: list[Connection]) -> None:
+        """Add a 'Zone: list[Connection]' item to the grid.
+
+        Args:
+            key (Zone): the 'key' of grid item.
+            value (list[Connection]): the 'value' of grid item.
+        """
         self.grid[key] = value

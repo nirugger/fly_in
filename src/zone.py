@@ -9,33 +9,16 @@ if TYPE_CHECKING:
 
 
 class ZoneType(Enum):
-    """Enum class for different Zone types."""
+    """Enum class for different Zone types.
+
+    Args:
+        Enum (_type_): parent Enum class.
+    """
 
     NORMAL = "normal"          # cost: 1
     RESTRICTED = "restricted"  # cost: 2
     BLOCKED = "blocked"        # inaccessible
     PRIORITY = "priority"      # cost: 1, preferred by pathfinder
-
-    @classmethod
-    def from_str(cls, value: str) -> "ZoneType":
-        """Instantiate a ZoneType from its string value.
-
-        Args:
-            value: One of 'normal', 'restricted', 'blocked', 'priority'.
-
-        Returns:
-            The matching ZoneType member.
-
-        Raises:
-            ValueError: If *value* does not match any member.
-        """
-        try:
-            return cls(value)
-        except ValueError:
-            valid = [m.value for m in cls]
-            raise ValueError(
-                f"Invalid zone type '{value}'. Expected one of {valid}."
-            )
 
 
 class Zone:
@@ -52,17 +35,17 @@ class Zone:
             max_drones: int,
             color: str,
     ) -> None:
-        """Initialise a Zone.
+        """Init a Zone.
 
         Args:
-            name:       Unique zone identifier.
-            zone_type:  ZoneType enum member.
-            x:          X coordinate on the grid.
-            y:          Y coordinate on the grid.
-            is_start:   True if this is the start hub.
-            is_end:     True if this is the end hub.
-            max_drones: Maximum simultaneous drones allowed.
-            color:      Display colour string.
+            name (str): unique zone identifier.
+            zone_type (ZoneType): ZoneType enum member.
+            x (int): X coordinate on the grid.
+            y (int): Y coordinate on the grid.
+            is_start (bool): 'True' if this is the start hub.
+            is_end (bool): 'True' if this is the end hub.
+            max_drones (int): maximum simultaneous drones allowed.
+            color (str): display colour string.
         """
         self.name = name
         self.zone_type = zone_type
@@ -79,49 +62,57 @@ class Zone:
         """Return the turn cost to move into this zone.
 
         Returns:
-            2 for RESTRICTED zones, 1 for all others.
+            int: 2 for RESTRICTED zones, 1 for all others.
         """
         return 2 if self.zone_type is ZoneType.RESTRICTED else 1
 
     def is_accessible(self) -> bool:
-        """Return True if drones may enter this zone.
+        """Ask if Zone is not 'blocked'.
 
         Returns:
-            False for BLOCKED zones, True otherwise.
+            bool: 'True' if Zone is not 'blocked'.
+            bool: 'False' if Zone is 'blocked'.
         """
         return self.zone_type is not ZoneType.BLOCKED
 
     def has_priority(self) -> bool:
-        """Return True if this zone is a PRIORITY zone.
+        """Ask if Zone is 'priority'.
 
         Returns:
-            True if zone_type is PRIORITY.
+            bool: 'True' if Zone is 'priority'.
+            bool: 'False' if Zone is not 'priority'.
         """
         return self.zone_type is ZoneType.PRIORITY
 
     def has_capacity(self) -> bool:
-        """Return True if the zone can accept at least one more drone.
+        """Ask if there is space for a Drone to enter.
 
         Returns:
-            True if current occupancy is below max_drones.
+            'True' if Zone has space.
+            'False' if Zone is full.
         """
         return len(self.current_drones) < self.max_drones
 
     def add_drone(self, drone: Drone) -> None:
-        """Add a drone to this zone's occupancy list.
+        """Add a Drone to the Zone.
 
         Args:
-            drone: The Drone to add.
+            drone (Drone): the Drone to be added.
         """
         self.current_drones.append(drone)
 
     def remove_drone(self, drone: Drone) -> None:
-        """Remove a drone from this zone's occupancy list.
+        """Remove a Drone from the Zone.
 
         Args:
-            drone: The Drone to remove.
+            drone (Drone): the Drone to be removed.
         """
         self.current_drones.remove(drone)
 
     def __str__(self) -> str:
+        """Get the name of the Zone.
+
+        Returns:
+            str: the name of the Zone.
+        """
         return self.name

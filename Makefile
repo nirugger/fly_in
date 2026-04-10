@@ -13,7 +13,7 @@ all: install run clean
 
 install:
 	@echo "$(YELLOW)→ Installing dependencies...$(RESET)"
-	uv sync
+	uv sync --group dev
 	@echo "$(GREEN)✓ Dependencies installed.$(RESET)"
 
 run:
@@ -32,9 +32,9 @@ clean:
 
 lint:
 	@echo "$(YELLOW)→ Running flake8...$(RESET)"
-	$(UV) flake8 src/
+	$(UV) flake8 main.py parser.py src/
 	@echo "$(YELLOW)→ Running mypy...$(RESET)"
-	$(UV) mypy src/ \
+	$(UV) mypy main.py parser.py src/ \
 				--warn-return-any \
 				--warn-unused-ignores \
 				--ignore-missing-imports \
@@ -44,9 +44,9 @@ lint:
 
 lint-strict:
 	@echo "$(YELLOW)→ Running flake8 (strict)...$(RESET)"
-	$(UV) flake8 src/
+	$(UV) flake8 main.py parser.py src/
 	@echo "$(YELLOW)→ Running mypy --strict...$(RESET)"
-	$(UV) mypy src/ --strict
-	@echo "$(YELLOW)→ Running pydocstyle...$(RESET)"
-	$(UV) pydocstyle src/
+	$(UV) mypy main.py parser.py src/ --strict
+	@echo "$(YELLOW)→ Running ruff...$(RESET)"
+	$(UV) ruff check main.py parser.py src/
 	@echo "$(GREEN)✓ Strict lint passed.$(RESET)"
