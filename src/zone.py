@@ -19,6 +19,7 @@ class ZoneType(Enum):
     RESTRICTED = "restricted"  # cost: 2
     BLOCKED = "blocked"        # inaccessible
     PRIORITY = "priority"      # cost: 1, preferred by pathfinder
+    CONNECTION = "connection"  # cost: 0
 
 
 class Zone:
@@ -57,6 +58,8 @@ class Zone:
         self.color = color
         self.connections: list[Connection] = []
         self.current_drones: list[Drone] = []
+        self.residual = max_drones
+        self.prev: Zone | None = None
 
     def movement_cost(self) -> int:
         """Return the turn cost to move into this zone.

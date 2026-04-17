@@ -87,6 +87,24 @@ class Graph:
             if zone.is_end:
                 self.end = zone
 
+    def get_valid_connections(self, zone: Zone) -> list[Connection]:
+
+        return [conn for conn in self.grid[zone]
+                if conn.residual > 0 and
+                conn.get_other(zone).residual > 0]
+
+    def get_conn_from_zones(
+            self,
+            zone_a: Zone,
+            zone_b: Zone
+    ) -> Connection | None:
+
+        if zone_a.zone_type is not ZoneType.CONNECTION:
+            for edge in self.grid[zone_a]:
+                if edge.get_other(zone_a) is zone_b:
+                    return edge
+        return None
+
     def get_neighbors(self, zone: Zone) -> list[tuple[Zone, int]]:
         """Get all reachable Zones from 'zone' and their movement cost.
 

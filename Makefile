@@ -17,7 +17,7 @@ install:
 	@echo "$(GREEN)✓ Dependencies installed.$(RESET)"
 
 run:
-	$(UV) python3 main.py maps/test/parsing_test.txt
+	$(UV) python3 main.py maps/custom/02_feedback_loop_puzzle.txt
 
 test:
 	$(UV) python3 main.py maps/test/parsing_test.txt

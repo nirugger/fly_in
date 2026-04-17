@@ -311,9 +311,10 @@ class Parser:
                     f"(accepted metadata values: {valid_metadata})"
                 )
 
+            valid_types = ["normal", "restricted", "blocked", "priority"]
             if parts[0] == "zone":
                 try:
-                    ZoneType(parts[1])
+                    parts[1] in valid_types
                 except ValueError:
                     valid = [m.value for m in ZoneType]
                     raise ParseError(

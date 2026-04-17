@@ -5,9 +5,9 @@ Each Connection represents an edge of the graph.
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
+from src.zone import Zone, ZoneType
 
 if TYPE_CHECKING:
-    from src.zone import Zone
     from src.drone import Drone
 
 
@@ -31,6 +31,17 @@ class Connection:
         self.zone_b = zone_b
         self.turn_in_transit = 0 | 1
         self.max_link_capacity = max_link_capacity
+        self.zone_in_connection: Zone = Zone(
+            f"{self.zone_a.name}-{self.zone_b.name}",
+            ZoneType.CONNECTION,
+            (self.zone_a.x + self.zone_b.x) // 2,
+            (self.zone_a.y + self.zone_b.y) // 2,
+            False,
+            False,
+            max_link_capacity,
+            "None"
+        )
+        self.residual = max_link_capacity
         self.drones_in_transit: list[Drone] = []
 
     def has_capacity(self) -> bool:
@@ -53,16 +64,16 @@ class Connection:
         """
         return self.zone_b if zone.name == self.zone_a.name else self.zone_a
 
-    def movement_cost(self, to_zone: Zone) -> int:
+    def movement_cost(self, from_zone: Zone) -> int:
         """Calculate movement cost for traversing this Connection.
 
         Args:
-            to_zone (Zone): the Zone to where the connection starts.
+            from_zone (Zone): the Zone from where the connection starts.
 
         Returns:
-            int: the turns needed to traversing the Connection.
+            int: the turns needed to traverse the Connection.
         """
-        return to_zone.movement_cost()
+        return self.get_other(from_zone).movement_cost()
 
     def add_drone(self, drone: Drone) -> None:
         """Add a Drone to the Connection.
