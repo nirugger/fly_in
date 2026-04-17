@@ -119,3 +119,11 @@ class Zone:
             str: the name of the Zone.
         """
         return self.name
+
+    def __repr__(self) -> str:
+        """Another getter of the name of the Zone.
+
+        Returns:
+            str: the name of the Zone.
+        """
+        return self.__str__()

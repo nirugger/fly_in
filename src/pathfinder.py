@@ -93,4 +93,4 @@ class Pathfinder:
     def EK(self):
         while self.dijkstra():
             self.set_minimum_capacity(self.paths[-1])
-            print("CIAO QUAGLIO'\n")
+            print(self.paths[-1])
