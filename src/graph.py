@@ -26,14 +26,14 @@ class Graph:
         self._set_pois()
 
     @classmethod
-    def from_raw_data(cls, raw_data: RawData) -> "Graph":
+    def build(cls, raw_data: RawData) -> "Graph":
         """Build a Graph and Drone fleet from the parser's output.
 
         Args:
             raw_data (RawData): all data needed for a Graph initialization.
 
         Returns:
-            Graph: a fulli initialized Graph instance.
+            Graph: a fully initialized Graph instance.
         """
         zone_dict: dict[str, Zone] = {}
         start_zone_name: str = ""

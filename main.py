@@ -14,7 +14,7 @@ if __name__ == "__main__":
               "expected usage:\ninsert <map_name> or leave empty")
         sys.exit(1)
 
-    graph = Graph.from_raw_data(raw_data)
+    graph = Graph.build(raw_data)
     for zone in graph.grid:
         neighbors = graph.get_neighbors(zone)
         print("zone:", str(zone))
