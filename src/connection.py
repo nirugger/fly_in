@@ -4,11 +4,11 @@ Each Connection represents an edge of the graph.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+# from typing import TYPE_CHECKING
 from src.zone import Zone, ZoneType
 
-if TYPE_CHECKING:
-    from src.drone import Drone
+# if TYPE_CHECKING:
+#     from src.drone import Drone
 
 
 class Connection:
@@ -80,18 +80,18 @@ class Connection:
         """
         return self.get_other(from_zone).movement_cost()
 
-    def add_drone(self, drone: Drone) -> None:
-        """Add a Drone to the Connection.
+    # def add_drone(self, drone: Drone) -> None:
+    #     """Add a Drone to the Connection.
 
-        Args:
-            drone (Drone): the Drone to be added.
-        """
-        self.drones_in_transit.append(drone)
+    #     Args:
+    #         drone (Drone): the Drone to be added.
+    #     """
+    #     self.drones_in_transit.append(drone)
 
-    def remove_drone(self, drone: Drone) -> None:
-        """Remove a Drone from the Connection.
+    # def remove_drone(self, drone: Drone) -> None:
+    #     """Remove a Drone from the Connection.
 
-        Args:
-            drone (Drone): the Drone to be removed.
-        """
-        self.drones_in_transit.remove(drone)
+    #     Args:
+    #         drone (Drone): the Drone to be removed.
+    #     """
+    #     self.drones_in_transit.remove(drone)

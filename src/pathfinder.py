@@ -1,5 +1,6 @@
 from src.graph import Graph
 from src.zone import Zone, ZoneType
+from src.types import Path
 
 
 class Pathfinder:
@@ -10,16 +11,15 @@ class Pathfinder:
             ) -> None:
 
         self.graph = graph
-        self.paths: list[tuple[list[Zone], int]] = []
-        self.find_all_paths()
+        self.paths: list[Path] = []
+        self._find_all_paths()
 
-    def find_all_paths(
+    def _find_all_paths(
             self
             ) -> None:
 
         while self.next_shortest_path():
             self.update_max_capacity(self.paths[-1])
-            print(self.paths[-1])
         if not self.paths:
             print("\nERROR: no path found\n")
 
@@ -39,9 +39,10 @@ class Pathfinder:
 
     def update_max_capacity(
             self,
-            path_capacity: tuple[list[Zone], int]
+            path_capacity: Path
             ) -> None:
-        path, capacity = path_capacity
+        path = path_capacity['path']
+        capacity = path_capacity['cap']
 
         for i in range(1, len(path) - 1):
 
@@ -121,8 +122,10 @@ class Pathfinder:
                     path.append(connection_zone)
                 current = current.prev
 
-        self.paths.append(
-            (path[::-1], self.get_path_capacity(path))
-        )
+        self.paths.append(Path(
+            path=path[::-1],
+            cap=self.get_path_capacity(path),
+            cost=len(path)
+        ))
 
         return True

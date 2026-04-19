@@ -1,7 +1,7 @@
 """Shared type definitions for the fly-in simulation."""
 from __future__ import annotations
 from typing import TypedDict
-from src.zone import ZoneType
+from src.zone import Zone, ZoneType
 
 
 class ZoneData(TypedDict):
@@ -67,3 +67,9 @@ class RawData(TypedDict):
     nb_drones: int
     zones: dict[str, ZoneData]
     connections: list[ConnectionData]
+
+
+class Path(TypedDict):
+    path: list[Zone]
+    cap: int
+    cost: int

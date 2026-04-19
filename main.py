@@ -1,6 +1,7 @@
 from parser import Parser, parse_argv
 from src.graph import Graph
 from src.pathfinder import Pathfinder
+from src.scheduler import Scheduler
 import sys
 
 
@@ -17,4 +18,11 @@ if __name__ == "__main__":
 
     graph = Graph.build(raw_data)
     pathfinder = Pathfinder(graph)
-    pathfinder.find_all_paths()
+    scheduler = Scheduler(graph, pathfinder)
+    scheduler.schedule_drones()
+    print(graph.drones)
+
+    for drone in graph.drones:
+        print(f"\n{drone.drone_id}: ")
+        for turn, zone in drone.path:
+            print(f"turn: {turn} - moved to {zone.name}")

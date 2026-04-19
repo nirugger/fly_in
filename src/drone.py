@@ -2,8 +2,8 @@
 
 Each Drone has a unique ID and a list of action per turn.
 """
-
 from __future__ import annotations
+from src.zone import Zone
 
 
 class Drone:
@@ -12,7 +12,6 @@ class Drone:
     def __init__(
             self,
             drone_id: int,
-            start_zone: str
     ) -> None:
         """Init a Drone.
 
@@ -21,9 +20,9 @@ class Drone:
             start_zone (str): the starting Zone of the Graph.
         """
         self.drone_id = drone_id
-        self.path: list[tuple[str, int]] = [(start_zone, 0)]
+        self.path: list[tuple[int, Zone]] = []
 
-    def position_at_turn(self, t: int) -> str | None:
+    def position_at_turn(self, t: int) -> Zone | None:
         """Ask in which Zone will the Drone be in a given turn.
 
         Args:
@@ -32,7 +31,7 @@ class Drone:
         Returns:
             str | None: Zone name at turn t | None if 'turn' not in path.
         """
-        for pos, turn in self.path:
+        for turn, pos in self.path:
             if turn == t:
                 return pos
         return None
