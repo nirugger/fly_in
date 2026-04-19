@@ -16,16 +16,5 @@ if __name__ == "__main__":
         sys.exit(1)
 
     graph = Graph.build(raw_data)
-    finder = Pathfinder(graph)
-    finder.EK()
-
-    # for zone in graph.grid:
-    #     neighbors = graph.get_neighbors(zone)
-    #     print("zone:", str(zone))
-    #     if neighbors:
-    #         print("neighbor:", neighbors[0][0].name)
-    #         print("cost:", neighbors[0][1])
-    #     else:
-    #         print("neighbor: (none)")
-    #         print("cost: -")
-    #     print()
+    pathfinder = Pathfinder(graph)
+    pathfinder.find_all_paths()

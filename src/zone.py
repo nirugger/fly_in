@@ -67,7 +67,12 @@ class Zone:
         Returns:
             int: 2 for RESTRICTED zones, 1 for all others.
         """
-        return 2 if self.zone_type is ZoneType.RESTRICTED else 1
+        cost: int = 1
+        if self.zone_type is ZoneType.RESTRICTED:
+            cost = 2
+        if self.zone_type is ZoneType.CONNECTION:
+            cost = 0
+        return cost
 
     def is_accessible(self) -> bool:
         """Ask if Zone is not 'blocked'.

@@ -29,29 +29,34 @@ class Connection:
         """
         self.zone_a = zone_a
         self.zone_b = zone_b
-        self.turn_in_transit = 0 | 1
         self.max_link_capacity = max_link_capacity
-        self.zone_in_connection: Zone = Zone(
-            f"{self.zone_a.name}-{self.zone_b.name}",
-            ZoneType.CONNECTION,
-            (self.zone_a.x + self.zone_b.x) // 2,
-            (self.zone_a.y + self.zone_b.y) // 2,
-            False,
-            False,
-            max_link_capacity,
-            "None"
-        )
         self.residual = max_link_capacity
-        self.drones_in_transit: list[Drone] = []
+        self._init_zone_c()
+        # self.drones_in_transit: list[Drone] = []
+        # self.turn_in_transit = 0 | 1
 
-    def has_capacity(self) -> bool:
-        """Ask if there is space for a Drone to transit.
+    def _init_zone_c(self) -> None:
+        if (self.zone_a.zone_type is ZoneType.RESTRICTED or
+                self.zone_b.zone_type is ZoneType.RESTRICTED):
+            self.zone_c = Zone(
+                name=f"{self.zone_a.name}-{self.zone_b.name}",
+                zone_type=ZoneType.CONNECTION,
+                x=(self.zone_a.x + self.zone_b.x) // 2,
+                y=(self.zone_a.y + self.zone_b.y) // 2,
+                is_start=False,
+                is_end=False,
+                max_drones=self.max_link_capacity,
+                color="None"
+            )
 
-        Returns:
-            'True' if Connection has space.
-            'False' if Connection is full.
-        """
-        return len(self.drones_in_transit) < self.max_link_capacity
+    # def has_capacity(self) -> bool:
+    #     """Ask if there is space for a Drone to transit.
+
+    #     Returns:
+    #         'True' if Connection has space.
+    #         'False' if Connection is full.
+    #     """
+    #     return len(self.drones_in_transit) < self.max_link_capacity
 
     def get_other(self, zone: Zone) -> Zone:
         """Return the Zone connected with 'zone' argument.

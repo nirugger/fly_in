@@ -87,22 +87,31 @@ class Graph:
             if zone.is_end:
                 self.end = zone
 
-    def get_valid_connections(self, zone: Zone) -> list[Connection]:
+    def get_vacant_connections(
+            self,
+            zone: Zone
+            ) -> list[Connection]:
 
-        return [conn for conn in self.grid[zone]
-                if conn.residual > 0 and
-                conn.get_other(zone).residual > 0]
+        return [
+            conn for conn in self.grid[zone]
+            if conn.residual > 0 and
+            conn.get_other(zone).residual > 0
+        ]
 
-    def get_conn_from_zones(
+    def get_connection_from_zones(
             self,
             zone_a: Zone,
             zone_b: Zone
-    ) -> Connection | None:
+            ) -> Connection | None:
 
-        if zone_a.zone_type is not ZoneType.CONNECTION:
-            for edge in self.grid[zone_a]:
-                if edge.get_other(zone_a) is zone_b:
-                    return edge
+        if (zone_a.zone_type is ZoneType.CONNECTION
+                or zone_b.zone_type is ZoneType.CONNECTION):
+            return None
+
+        for connection in self.grid[zone_a]:
+            if connection.get_other(zone_a) is zone_b:
+                return connection
+
         return None
 
     def get_neighbors(self, zone: Zone) -> list[tuple[Zone, int]]:
