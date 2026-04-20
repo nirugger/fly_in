@@ -15,8 +15,8 @@ env/
 .python-version
 .cache/
 
-# Project stuff
-data/output/
+# Linters
+.ruff_cache/
 
 # OS
 .DS_Store

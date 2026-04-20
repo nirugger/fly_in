@@ -18,7 +18,7 @@ class Pathfinder:
             self
             ) -> None:
 
-        while self.next_shortest_path():
+        while self.find_next_shortest_path():
             self.update_max_capacity(self.paths[-1])
         if not self.paths:
             print("\nERROR: no path found\n")
@@ -78,7 +78,31 @@ class Pathfinder:
                 max_capacity = connection.max_link_capacity
         return max_capacity
 
-    def next_shortest_path(
+    def build_next_shortest_path(
+            self
+            ) -> None:
+        current: Zone = self.graph.end
+        path: list[Zone] = []
+
+        if current.prev:
+            while current:
+                path.append(current)
+                if current.zone_type is ZoneType.RESTRICTED:
+                    connection_zone = next(
+                        connection.zone_c
+                        for connection in self.graph.grid[current]
+                        if connection.get_other(current) is current.prev
+                    )
+                    path.append(connection_zone)
+                current = current.prev
+
+        self.paths.append(Path(
+            path=path[::-1],
+            cap=self.get_path_capacity(path),
+            cost=len(path)
+        ))
+
+    def find_next_shortest_path(
             self
             ) -> bool:
 
@@ -109,23 +133,5 @@ class Pathfinder:
         if not current.is_end:
             return False
 
-        path: list[Zone] = []
-        if current.prev:
-            while current:
-                path.append(current)
-                if current.zone_type is ZoneType.RESTRICTED:
-                    connection_zone = next(
-                        connection.zone_c
-                        for connection in self.graph.grid[current]
-                        if connection.get_other(current) is current.prev
-                    )
-                    path.append(connection_zone)
-                current = current.prev
-
-        self.paths.append(Path(
-            path=path[::-1],
-            cap=self.get_path_capacity(path),
-            cost=len(path)
-        ))
-
+        self.build_next_shortest_path()
         return True

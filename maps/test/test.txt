@@ -1,0 +1,10 @@
+nb_drones: 3
+
+start_hub: start 0 0 [color=green max_drones=3]
+hub: A 1 0 [color=blue max_drones=1]
+hub: B 2 0 [color=blue max_drones=1]
+end_hub: goal 3 0 [color=green max_drones=3]
+
+connection: start-A
+connection: A-B
+connection: B-goal

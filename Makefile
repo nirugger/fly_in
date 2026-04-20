@@ -1,6 +1,6 @@
 export UV_CACHE_DIR=$(PWD)/.cache/uv
 
-.PHONY: all install run debug clean lint lint-strict
+.PHONY: all install run debug clean fclean lint lint-strict
 
 UV := uv run
 
@@ -17,10 +17,10 @@ install:
 	@echo "$(GREEN)✓ Dependencies installed.$(RESET)"
 
 run:
-	$(UV) python3 main.py maps/custom/02_feedback_loop_puzzle.txt
+	$(UV) python3 main.py maps/challenger/01_the_impossible_dream.txt
 
 test:
-	$(UV) python3 main.py maps/test/parsing_test.txt
+	$(UV) python3 main.py maps/hard/03_ultimate_challenge.txt
 
 debug:
 	$(UV) python3 -m pdb main maps/test/parsing_test.txt
@@ -29,6 +29,11 @@ clean:
 	@find . -type d -name "__pycache__" -not -path "./.venv/*" | xargs rm -rf
 	@find . -type d -name ".mypy_cache" -not -path "./.venv/*" | xargs rm -rf
 	@find . -type d -name "*.egg-info"  -not -path "./.venv/*" | xargs rm -rf
+	@find . -type d -name ".ruff_cache" -not -path "./.venv/*" | xargs rm -rf
+
+fclean: clean
+	@rm -rf .cache/uv
+	@rm -rf .venv
 
 lint:
 	@echo "$(YELLOW)→ Running flake8...$(RESET)"
