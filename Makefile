@@ -17,7 +17,7 @@ install:
 	@echo "$(GREEN)✓ Dependencies installed.$(RESET)"
 
 run:
-	$(UV) python3 main.py maps/challenger/01_the_impossible_dream.txt
+	$(UV) python3 main.py maps/custom/09_highway_hell.txt
 
 test:
 	$(UV) python3 main.py maps/hard/03_ultimate_challenge.txt
