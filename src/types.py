@@ -1,7 +1,9 @@
 """Shared type definitions for the fly-in simulation."""
 from __future__ import annotations
 from typing import TypedDict
+from dataclasses import dataclass
 from src.zone import Zone, ZoneType
+from src.connection import Connection
 
 
 class ZoneData(TypedDict):
@@ -73,3 +75,9 @@ class Path(TypedDict):
     path: list[Zone]
     cap: int
     cost: int
+
+
+@dataclass
+class RenderGrid:
+    zones: list[Zone]
+    connections: list[Connection]

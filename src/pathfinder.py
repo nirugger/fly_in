@@ -90,7 +90,7 @@ class Pathfinder:
                 if current.zone_type is ZoneType.RESTRICTED:
                     connection_zone = next(
                         connection.zone_c
-                        for connection in self.graph.grid[current]
+                        for connection in self.graph.finder_grid[current]
                         if connection.get_other(current) is current.prev
                     )
                     path.append(connection_zone)
@@ -106,7 +106,7 @@ class Pathfinder:
             self
             ) -> bool:
 
-        for zone in self.graph.grid:
+        for zone in self.graph.finder_grid:
             zone.prev = None
 
         current: Zone = self.graph.start

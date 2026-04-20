@@ -12,7 +12,7 @@ class Drone:
     def __init__(
             self,
             drone_id: int,
-    ) -> None:
+            ) -> None:
         """Init a Drone.
 
         Args:
@@ -22,7 +22,10 @@ class Drone:
         self.drone_id = drone_id
         self.path: list[tuple[int, Zone]] = []
 
-    def position_at_turn(self, t: int) -> Zone | None:
+    def position_at_turn(
+            self,
+            t: int
+            ) -> Zone | None:
         """Ask in which Zone will the Drone be in a given turn.
 
         Args:
@@ -36,7 +39,10 @@ class Drone:
                 return pos
         return None
 
-    def moved_at_turn(self, t: int) -> bool:
+    def moved_at_turn(
+            self,
+            t: int
+            ) -> bool:
         """Ask if Drone has changed Zone from previous given turn.
 
         Args:

@@ -4,6 +4,7 @@ from src.drone import Drone
 from src.graph import Graph
 from src.pathfinder import Pathfinder
 from src.scheduler import Scheduler
+from rendering.renderer import Renderer
 import sys
 
 
@@ -11,8 +12,8 @@ def print_output(drones: list[Drone]) -> None:
 
     turn_map = _build_turn_map(drones)
 
-    for t, drone_zone in turn_map.items():
-        line = f"turn {t}: "
+    for _, drone_zone in turn_map.items():
+        line = ""
         for drone, zone in drone_zone:
             if zone.is_start:
                 continue
@@ -29,14 +30,17 @@ def _build_turn_map(drones: list[Drone]) -> dict[int, list[tuple[int, Zone]]]:
     )
 
     turn_map: dict[int, list[tuple[int, Zone]]] = {
-        t: [] for t in range(1, max_turn + 1)
+        t: [(drone.drone_id, zone)
+            for drone in drones for turn, zone in drone.path
+            if turn == t]
+        for t in range(1, max_turn + 1)
     }
 
-    for drone in drones:
-        for t, zone in drone.path:
-            if t == 0:
-                continue
-            turn_map[t].append((drone.drone_id, zone))
+    # for drone in drones:
+    #     for t, zone in drone.path[1:]:
+    #         if t == 0:
+    #             continue
+    #         turn_map[t].append((drone.drone_id, zone))
     return turn_map
 
 
@@ -57,4 +61,7 @@ if __name__ == "__main__":
     scheduler.schedule_drones()
 
     drones = graph.drones
-    print_output(drones)
+    # print_output(drones)
+
+    renderer = Renderer(graph, drones)
+    renderer.run()

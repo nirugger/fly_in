@@ -19,7 +19,7 @@ class Connection:
             zone_a: Zone,
             zone_b: Zone,
             max_link_capacity: int,
-    ) -> None:
+            ) -> None:
         """Init a Connection.
 
         Args:
@@ -29,13 +29,18 @@ class Connection:
         """
         self.zone_a = zone_a
         self.zone_b = zone_b
+        self.zone_c: Zone | None = None
         self.max_link_capacity = max_link_capacity
         self.residual = max_link_capacity
+        self.name = f"{self.zone_a.name}-{self.zone_b.name}"
         self._init_zone_c()
         # self.drones_in_transit: list[Drone] = []
         # self.turn_in_transit = 0 | 1
 
-    def _init_zone_c(self) -> None:
+    def _init_zone_c(
+            self
+            ) -> None:
+
         if (self.zone_a.zone_type is ZoneType.RESTRICTED or
                 self.zone_b.zone_type is ZoneType.RESTRICTED):
             self.zone_c = Zone(
@@ -58,7 +63,10 @@ class Connection:
     #     """
     #     return len(self.drones_in_transit) < self.max_link_capacity
 
-    def get_other(self, zone: Zone) -> Zone:
+    def get_other(
+            self,
+            zone: Zone
+            ) -> Zone:
         """Return the Zone connected with 'zone' argument.
 
         Args:
@@ -69,7 +77,10 @@ class Connection:
         """
         return self.zone_b if zone.name == self.zone_a.name else self.zone_a
 
-    def movement_cost(self, from_zone: Zone) -> int:
+    def movement_cost(
+            self,
+            from_zone: Zone
+            ) -> int:
         """Calculate movement cost for traversing this Connection.
 
         Args:
