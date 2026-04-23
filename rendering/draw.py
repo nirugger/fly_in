@@ -5,7 +5,7 @@ Color = tuple[int, int, int]
 def draw_circle(
         surface: pygame.Surface,
         center: tuple[int, int],
-        radius: int,
+        radius: float,
         color: Color,
         ) -> None:
     pygame.draw.circle(surface, color, center, radius)

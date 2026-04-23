@@ -1,6 +1,7 @@
 from src.graph import Graph
 from src.zone import Zone, ZoneType
 from src.types import Path
+import sys
 
 
 class Pathfinder:
@@ -21,7 +22,9 @@ class Pathfinder:
         while self.find_next_shortest_path():
             self.update_max_capacity(self.paths[-1])
         if not self.paths:
-            print("\nERROR: no path found\n")
+            print("[ERROR]: "
+                  "the map has no valid solution\n")
+            sys.exit(1)
 
     def insert_sorted(
             self,
@@ -99,7 +102,7 @@ class Pathfinder:
         self.paths.append(Path(
             path=path[::-1],
             cap=self.get_path_capacity(path),
-            cost=len(path)
+            cost=len(path) - 1
         ))
 
     def find_next_shortest_path(

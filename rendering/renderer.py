@@ -167,7 +167,7 @@ class Renderer:
     def _get_zone_color(self, zone: Zone) -> tuple[int, int, int]:
         string = zone.color
         if string == "None":
-            return COLORS.get("default")
+            return (210, 210, 215)
 
         color = COLORS.get(string)
         if color is None:
@@ -195,7 +195,7 @@ class Renderer:
                 start=start,
                 end=end,
                 color=(55, 55, 55),
-                width=2 * drone_radius + 1
+                width=2 * int(drone_radius) + 1
             )
 
         # disegno le zone
@@ -252,10 +252,10 @@ class Renderer:
         # disegno HUD
         draw_hud(
             surface=self.screen,
-            text=f"Turn: {int(self.current_turn)}",
+            text=f"TURN: {int(self.current_turn)}",
             position=(20, 20),
             font=self.hud_font,
-            color=(200, 200, 200)
+            color=(242, 242, 242)
         )
 
     def _drone_position(
