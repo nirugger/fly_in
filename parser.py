@@ -375,7 +375,7 @@ class Parser:
             "x": x,
             "y": y,
             "max_drones": max_drones,
-            "color": meta_dict.get("color", "grey"),
+            "color": meta_dict.get("color", "None"),
             "is_start": data[0] == "start_hub:",
             "is_end": data[0] == "end_hub:",
         }

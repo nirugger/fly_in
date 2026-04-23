@@ -18,7 +18,7 @@
 #
 # Target: <= 20 turns
 
-nb_drones: 12
+nb_drones: 3
 
 start_hub: start 0 0 [color=green max_drones=12]
 
@@ -28,8 +28,8 @@ hub: top_m 2 2 [zone=priority color=cyan max_drones=1]
 hub: top_r 3 2 [zone=priority color=cyan max_drones=1]
 
 # Middle row: normal zones, cap 2 (balanced)
-hub: mid_l 1 0 [color=blue max_drones=2]
-hub: mid_m 2 0 [color=blue max_drones=2]
+hub: mid_l 1 0 [color=blue max_drones=2 zone=restricted]
+hub: mid_m 2 0 [color=blue max_drones=2 zone=restricted]
 hub: mid_r 3 0 [color=blue max_drones=2]
 
 # Bottom row: restricted zones, cap 2 (slow but decent throughput)
