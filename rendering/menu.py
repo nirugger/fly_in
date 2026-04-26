@@ -24,9 +24,8 @@ class Menu:
         self.state: MenuState = MenuState.MAIN
         self.buttons: dict[str, pygame.Rect] = {}
 
-        h = screen.get_height()
-        self.title_font = pygame.font.Font(FONT_BOLD, h // 20)
-        self.menu_font = pygame.font.Font(FONT_REGULAR, h // 40)
+        self.title_font = pygame.font.Font(FONT_BOLD, 42)
+        self.menu_font = pygame.font.Font(FONT_REGULAR, 20)
 
     def run(self) -> str:
         while True:
@@ -40,8 +39,8 @@ class Menu:
                 self._draw_map_medium()
             elif self.state == MenuState.MAP_HARD:
                 self._draw_map_hard()
-            # elif self.state == MenuState.MAP_CUSTOM:
-            #     self._draw_map_custom()
+            elif self.state == MenuState.MAP_CUSTOM:
+                self._draw_map_custom()
 
             result = self._handle_events()
             if result:
@@ -342,6 +341,65 @@ class Menu:
             (0, (self.menu_font.get_height() + 3) * 6)
         )
 
+    def _draw_map_custom(self) -> None:
+
+        self.buttons.clear()
+        self.screen.fill((5, 10, 15))
+
+        self.buttons['title'] = draw_label(
+            self.screen,
+            self.title,
+            self.center,
+            self.title_font,
+            self.text_color,
+            (0, -self.menu_font.get_height() * 3)
+        )
+
+        self.buttons['01_c'] = draw_label(
+            self.screen,
+            "RIVER DELTA",
+            self.center,
+            self.menu_font,
+            self.text_color,
+            (0, 0)
+        )
+
+        self.buttons['02_c'] = draw_label(
+            self.screen,
+            "FEEDBACK LOOP",
+            self.center,
+            self.menu_font,
+            self.text_color,
+            (0, self.menu_font.get_height() + 3)
+        )
+
+        self.buttons['03_c'] = draw_label(
+            self.screen,
+            "HIGHWAY JAM",
+            self.center,
+            self.menu_font,
+            self.text_color,
+            (0, (self.menu_font.get_height() + 3) * 2)
+        )
+
+        self.buttons['04_c'] = draw_label(
+            self.screen,
+            "LABYRINTH CITY",
+            self.center,
+            self.menu_font,
+            self.text_color,
+            (0, (self.menu_font.get_height() + 3) * 3)
+        )
+
+        self.buttons['back_to_cat'] = draw_label(
+            self.screen,
+            "BACK",
+            self.center,
+            self.menu_font,
+            self.text_color,
+            (0, (self.menu_font.get_height() + 3) * 6)
+        )
+
         hovered = self._hovered_button()
         if hovered and hovered != "title":
             rect = self.buttons[hovered]
@@ -452,6 +510,22 @@ class Menu:
                 if ('custom' in self.buttons and
                         self.buttons['custom'].collidepoint(event.pos)):
                     self.state = MenuState.MAP_CUSTOM
+
+                if ('01_c' in self.buttons and
+                        self.buttons['01_c'].collidepoint(event.pos)):
+                    return MAPS['01_c']
+
+                if ('02_c' in self.buttons and
+                        self.buttons['02_c'].collidepoint(event.pos)):
+                    return MAPS['02_c']
+
+                if ('03_c' in self.buttons and
+                        self.buttons['03_c'].collidepoint(event.pos)):
+                    return MAPS['03_c']
+
+                if ('04_c' in self.buttons and
+                        self.buttons['04_c'].collidepoint(event.pos)):
+                    return MAPS['04_c']
 
                 if ('start' in self.buttons and
                         self.buttons['start'].collidepoint(event.pos)):

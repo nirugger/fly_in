@@ -7,13 +7,14 @@ from src.scheduler import Scheduler
 from rendering.renderer import Renderer
 import pygame
 from rendering.menu import Menu
+from rendering.data import RESOLUTION
 # import sys
 
 
 class SimulationManager:
 
     def __init__(self) -> None:
-        self.screen = pygame.display.set_mode((1920, 1080), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode(RESOLUTION, pygame.RESIZABLE)
         self.graph: Graph | None = None
 
     def run(self) -> None:
@@ -24,6 +25,7 @@ class SimulationManager:
             parser = Parser(path_to_map)
             raw_data = parser.parse()
             self.graph = Graph.build(raw_data)
+
             pathfinder = Pathfinder(self.graph)
             scheduler = Scheduler(self.graph, pathfinder)
             scheduler.schedule_drones()

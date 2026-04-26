@@ -5,13 +5,10 @@ import math
 from src.graph import Graph
 from src.drone import Drone
 from src.zone import Zone, ZoneType
-from rendering.data import COLORS, FONT_REGULAR, FONT_BOLD, SPAN, TEXT_COLOR, DRONE_COLOR, RAND_INT
-from rendering.draw import (draw_circle,
-                            draw_line,
-                            draw_label,
-                            draw_tooltip,
-                            draw_hud,
-                            draw_key)
+from rendering.data import (COLORS, FONT_REGULAR, FONT_BOLD, SPAN, TEXT_COLOR,
+                            DRONE_COLOR, RAND_INT)
+from rendering.draw import (draw_circle, draw_line, draw_label, draw_tooltip,
+                            draw_button)
 
 
 class Renderer:
@@ -35,21 +32,36 @@ class Renderer:
         )
         self.positions = self._compute_layout()
 
-        h = screen.get_height()
-        self.title_font = pygame.font.Font(FONT_BOLD, h // 20)
-        self.tooltip_font = pygame.font.Font(FONT_REGULAR, h // 40)
-        self.hud_font = pygame.font.Font(FONT_REGULAR, h // 25)
-        self.hud_font_bold = pygame.font.Font(FONT_BOLD, h // 25)
+        self.title_font = pygame.font.Font(FONT_BOLD, 42)
+        self.tooltip_font = pygame.font.Font(FONT_REGULAR, 15)
+        self.hud_font = pygame.font.Font(FONT_REGULAR, 25)
+        self.hud_font_bold = pygame.font.Font(FONT_BOLD, 25)
 
         self.drone_angles: dict[int, float] = {
-            drone.drone_id: 0.0 for drone in self.drones
+            drone.drone_id: 0.00 for drone in self.drones
         }
         self.zone_radius: float = 20
         self.drone_radius: float = 5
-        self.last_int_turn: int = 0
+        self.last_int_turn: int = -1
         self.back_to_menu: bool = False
         self.random_color: bool = False
         self.buttons: dict[str, pygame.Rect] = {}
+
+        self.drones_action_map: dict[str, int] = {}
+
+        self.total_path_cost: int = sum(d.path_cost for d in self.drones)
+        self.average_turn_per_drone: float = self._average_turn_per_drone()
+
+        self.completion: float = 0.0
+
+    def _average_turn_per_drone(self) -> float:
+
+        return sum(
+            max(turn for turn, _ in drone.path)
+            - min(t for t, z in drone.path if not z.is_start)
+            + 1
+            for drone in self.drones
+        ) / len(self.drones)
 
     def _compute_layout(
             self
@@ -106,6 +118,11 @@ class Renderer:
 
         return positions
 
+    def _compute_percentage(self) -> float:
+        # current : max = x : 100.0
+        # x = current * 100.0 / max
+        return round(self.current_turn * 100 / self.max_turn, 2)
+
     def run(
         self
     ) -> None:
@@ -121,25 +138,24 @@ class Renderer:
                 self.paused = True
 
             if self.current_turn < 0.0:
-                self.current_turn = int(0.0)
+                self.current_turn = 0.0
+                self.last_int_turn = -1
                 self.speed = 1.0
+                # self._reset_drones_sync()
                 self.paused = True
 
+            for drone in self.drones:
+                self.drone_angles[drone.drone_id] += (
+                    self.speed * dt * (15 / drone.drones_in_zones)
+                )
+
+            self.drones_action_map = self._drones_action_map()
             current_int_turn = int(self.current_turn)
             if self.last_int_turn != current_int_turn:
-                self.current_turn = (current_int_turn
-                                     if current_int_turn > self.last_int_turn
-                                     else self.last_int_turn)
+                self.drones_action_map = self._drones_action_map(pause=True)
+                self._reset_drones_sync()
                 self.last_int_turn = current_int_turn
 
-            for drone in self.drones:
-                self.drone_angles[drone.drone_id] += self.speed * dt * (15 / drone.drones_in_zones)
-                # self.drone_angles[drone.drone_id] += self.speed * dt * 2.5
-
-            # current_int_turn = int(self.current_turn)
-            # if self.paused is False and self.last_int_turn != current_int_turn:
-            if self.speed < 0 and self.paused is False and self.current_turn.is_integer():
-                self._reset_drones_sync()
             self._draw_frame()
             pygame.display.flip()
 
@@ -194,7 +210,7 @@ class Renderer:
             self
     ) -> None:
 
-        self.screen.fill((15, 20, 25))
+        self.screen.fill((5, 10, 15))
         zone_radius: float = 20
         drone_radius: float = 5
 
@@ -210,7 +226,7 @@ class Renderer:
                 start=start,
                 end=end,
                 color=(55, 55, 55),
-                width=2 * int(drone_radius)
+                width=int(drone_radius)
             )
 
         # disegno le zone
@@ -223,8 +239,83 @@ class Renderer:
                 surface=self.screen,
                 center=position,
                 radius=zone_radius,
-                color=color
+                color=color,
+                # edge=True
             )
+
+        # disegno i tooltip
+        hz = self._hovered_zone(zone_radius)
+        if hz is not None and self.current_turn < self.max_turn:
+            draw_circle(
+                surface=self.screen,
+                color=TEXT_COLOR,
+                center=self.positions[hz],
+                radius=zone_radius+2,
+                width=int(zone_radius // 3)
+            )
+            pos = self.positions.get(hz)
+            if pos is not None:
+                lines: list[str] = [
+                    f"NAME: {hz.name}",
+                    f"TYPE: {hz.zone_type.value}",
+                    f"COLOR: {hz.color}",
+                    f"MAX DRONES: {hz.max_drones}",
+                    "",
+                    "NIEGHBORS:"
+                ]
+                neighbors = self._get_neighbors(hz)
+                for z in neighbors:
+                    lines.append(f"cost {z.movement_cost()} → {z.name}")
+                    # match z.zone_type:
+                    #     case ZoneType.NORMAL:
+                    #         z_color = COLORS['highlight_normal']
+                    #     case ZoneType.BLOCKED:
+                    #         z_color = COLORS['highlight_blocked']
+                    #     case ZoneType.RESTRICTED:
+                    #         z_color = COLORS['highlight_restricted']
+                    #     case ZoneType.PRIORITY:
+                    #         z_color = COLORS['highlight_priority']
+
+                    draw_circle(
+                        surface=self.screen,
+                        color=TEXT_COLOR,
+                        center=self.positions[z],
+                        radius=zone_radius+2,
+                        width=3
+                    )
+                    x1, y1 = self.positions[z]
+                    x2, y2 = self.positions[hz]
+                    angle = math.atan2(abs(y2 - y1), abs(x2 - x1))
+
+                    if x2 > x1:
+                        nx1 = x1 + math.cos(angle) * zone_radius
+                        nx2 = x2 - math.cos(angle) * zone_radius
+                    else:
+                        nx1 = x1 - math.cos(angle) * zone_radius
+                        nx2 = x2 + math.cos(angle) * zone_radius
+
+                    if y2 > y1:
+                        ny1 = y1 + math.sin(angle) * zone_radius
+                        ny2 = y2 - math.sin(angle) * zone_radius
+                    else:
+                        ny1 = y1 - math.sin(angle) * zone_radius
+                        ny2 = y2 + math.sin(angle) * zone_radius
+
+                    draw_line(
+                        surface=self.screen,
+                        color=TEXT_COLOR,
+                        start=(int(nx1), int(ny1)),
+                        end=(int(nx2), int(ny2)),
+                        width=int(drone_radius) - 2
+                    )
+                draw_tooltip(
+                    surface=self.screen,
+                    screen_size=self.screen.get_size(),
+                    lines=lines,
+                    pos=(30, 30),
+                    font=self.tooltip_font,
+                    color=(242, 242, 242)
+                )
 
         # disegno i droni
         for drone in self.drones:
@@ -247,77 +338,151 @@ class Renderer:
                 color=color
             )
 
-        # disegno i tooltip
-        hz = self._hovered_zone(zone_radius)
-        if hz is not None and self.current_turn < self.max_turn:
-            pos = self.positions.get(hz)
-            if pos is not None:
-                lines = [
-                    f"NAME: {hz.name}",
-                    f"TYPE: {hz.zone_type.value}",
-                    f"COLOR: {hz.color}",
-                    f"MAX DRONES: {hz.max_drones}",
-                    "",
-                    "NIEGHBORS:"
-                ]
-                neighbors = self._get_neighbors(hz)
-                for z in neighbors:
-                    lines.append(f"cost {z.movement_cost()} → {z.name}")
-                draw_tooltip(
-                    surface=self.screen,
-                    screen_size=self.screen.get_size(),
-                    lines=lines,
-                    pos=pos,
-                    font=self.tooltip_font,
-                    color=(242, 242, 242)
-                )
-                # TODO: for zone in neighbors, disegno circonferenza attorno ai neighbors
+        if self.current_turn >= self.max_turn:
+            self.current_turn = float(self.max_turn)
+            self.paused = True
+            self._draw_finish()
 
         # disegno HUD
-        draw_hud(
-            surface=self.screen,
-            text=f"TURN: {int(self.current_turn)}/{self.max_turn}",
-            position=(30, 30),
-            font=self.title_font,
-            color=TEXT_COLOR
-        )
+        # draw_hud(
+        #     surface=self.screen,
+        #     text=f"TURN: {int(self.current_turn)}/{self.max_turn}",
+        #     position=(30, 30),
+        #     font=self.hud_font_bold,
+        #     color=TEXT_COLOR
+        # )
 
-        offset, _ = self.title_font.size("KEYS")
-        self.buttons['keys'] = draw_key(
+        font_x, font_y = self.title_font.size("KEYS")
+        self.buttons['keys'] = draw_button(
             surface=self.screen,
             text="KEYS",
-            position=(self.screen.get_width() - offset - 30, 30),
-            font=self.title_font,
+            position=(self.screen.get_width(), 0),
+            font=self.hud_font_bold,
             color=TEXT_COLOR,
+            offset=(-(font_x + 30), 30)
+        )
+
+        self.buttons['data'] = draw_button(
+            surface=self.screen,
+            text="DATA",
+            position=(self.screen.get_width(), 0),
+            font=self.hud_font_bold,
+            color=TEXT_COLOR,
+            offset=(-(font_x + 30), font_y + 10)
         )
 
         hb = self._hovered_button()
         if hb is not None:
             rect = self.buttons[hb]
-            lines = [
-                "↑ : speed up",
-                "↓ : speed down",
-                "→ : next turn",
-                "← : prev turn",
-                "C : colors",
-                "Q : quit",
-                "",
-                "SPACE  : pause",
-                "ESCAPE : back to menu",
-            ]
+            lines = []
+            if hb == "keys":
+                lines = [
+                    "↑ : speed up",
+                    "↓ : speed down",
+                    "→ : next turn",
+                    "← : prev turn",
+                    "",
+                    "C : colors",
+                    "Q : quit",
+                    "",
+                    "SPACE  : pause",
+                    "ESCAPE : back to menu",
+                ]
+            elif hb == "data":
+                lines = [
+                    f"CURRENT TURN : {int(self.current_turn)}",
+                    f"MAXIMUM TURN : {self.max_turn}",
+                    f"COMPLETION % : {self._compute_percentage()}",
+                    "",
+                    f"DRONES WAITING  : {self.drones_action_map['waiting']}",
+                    f"DRONES PREPPING : {self.drones_action_map['prepping']}",
+                    f"DRONES MOVING   : {self.drones_action_map['moving']}",
+                    f"DRONES ARRIVED  : {self.drones_action_map['arrived']}",
+                    "",
+                    f"TOTAL  SIMULATION  COST : {self.total_path_cost}",
+                    "AVERAGE TURNS PER DRONE : "
+                    f"{round(self.average_turn_per_drone, 2)}"
+
+                ]
+
+            draw_line(
+                surface=self.screen,
+                color=TEXT_COLOR,
+                start=(rect.left - 3, rect.top),
+                end=(rect.right + 3, rect.top),
+                width=2
+            )
+
+            draw_line(
+                surface=self.screen,
+                color=TEXT_COLOR,
+                start=(rect.right + 3, rect.top),
+                end=(rect.right + 3, rect.bottom),
+                width=2
+            )
+
+            draw_line(
+                surface=self.screen,
+                color=TEXT_COLOR,
+                start=(rect.left - 3, rect.bottom),
+                end=(rect.right + 3, rect.bottom),
+                width=2
+            )
+
             draw_tooltip(
                 surface=self.screen,
                 screen_size=self.screen.get_size(),
                 lines=lines,
-                pos=rect.topleft,
+                pos=(rect.left - 3, rect.top),
                 font=self.tooltip_font,
-                color=(242, 242, 242)
+                color=TEXT_COLOR
             )
 
-        if self.current_turn >= self.max_turn:
-            self.current_turn = float(self.max_turn)
-            self.paused = True
-            self._draw_finish()
+    def _drones_action_map(
+            self,
+            pause: bool = False
+    ) -> dict[str, int]:
+
+        waiting: int = 0
+        prepping: int = 0
+        moving: int = 0
+        arrived: int = 0
+
+        for d in self.drones:
+
+            ptt = self._position_this_turn(d)
+            pnt = self._position_next_turn(d)
+            lnt = self._later_next_turn(d)
+            pat = d.position_at_turn(int(self.current_turn))
+
+            if self.paused and self.current_turn.is_integer():
+                if pnt is None:
+                    arrived += 1
+                elif pnt is ptt and lnt is ptt:
+                    waiting += 1
+                elif (ptt is not pnt
+                      and pat and not pat.is_end
+                      and pat.zone_type is not ZoneType.CONNECTION):
+                    prepping += 1
+                elif ptt is not pnt and pat and not pat.is_end:
+                    moving += 1
+
+            else:
+                if pnt is None:
+                    arrived += 1
+                elif pnt is ptt and lnt is ptt:
+                    waiting += 1
+                elif pnt is ptt and lnt is not ptt:
+                    prepping += 1
+                elif ptt is not pnt and pat and not pat.is_end:
+                    moving += 1
+
+        return {
+            'waiting': waiting,
+            'prepping': prepping,
+            'moving': moving,
+            'arrived': arrived
+        }
 
     def _drone_position(
             self,
@@ -380,11 +545,9 @@ class Renderer:
                     mult=0.5,
                 )
 
-        if (self.current_turn.is_integer() and
+        if (float(self.current_turn).is_integer() and
                 zone_a.zone_type is not ZoneType.CONNECTION):
 
-            print(self.current_turn.is_integer())
-            print(self.current_turn)
             paused_drones = [
                 d for d in drones_in_zone
                 if self._position_this_turn(d) is not
@@ -464,6 +627,7 @@ class Renderer:
                 neighbors.append(connection.zone_b)
             elif connection.zone_b is zone:
                 neighbors.append(connection.zone_a)
+
         return neighbors
 
     def _get_occupancy(
@@ -551,7 +715,12 @@ class Renderer:
                 math.ceil(self.current_turn + 1)
             )
 
-    def _reset_drones_sync(self, orbit: bool = True, angles: bool = True, zones: bool = True) -> None:
+    def _reset_drones_sync(
+            self,
+            orbit: bool = True,
+            angles: bool = True,
+            zones: bool = True
+            ) -> None:
 
         for drone in self.drones:
             if orbit is True:
@@ -577,16 +746,19 @@ class Renderer:
                     self._reset_drones_sync()
                     self.current_turn = min(
                         int(self.current_turn) + 1.0, float(self.max_turn)
+                    ) if self.paused else min(
+                        self.current_turn + 1.0, float(self.max_turn)
                     )
 
                 if event.key == pygame.K_LEFT:
 
                     # setting orbit offset to 0 to prevent off-sync
-
+                    self._reset_drones_sync()
                     self.current_turn = max(
                         math.ceil(self.current_turn) - 1.0, 0.0
+                    ) if self.paused else max(
+                        self.current_turn - 1.0, 0.0
                     )
-                    self._reset_drones_sync()
 
                 if event.key == pygame.K_UP:
                     if self.paused and self.speed < 0:

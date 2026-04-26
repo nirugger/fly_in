@@ -1,0 +1,118 @@
+# CUSTOM MAP: THE DELTA v2
+# 40 drones - river-delta topology, redesigned for parallel routing
+# Key fix: final convergence uses 3 independent arrival gates -> goal
+# instead of a single serial channel, keeping all branches alive end-to-end
+# Performance target: < 35 turns
+nb_drones: 40
+ 
+# === SOURCE ===
+start_hub: source 0 0 [color=green max_drones=40]
+ 
+# === LAYER 1: First Split (3 independent branches) ===
+hub: split_north 1 3 [color=cyan max_drones=3]
+hub: split_center 1 0 [color=cyan max_drones=3]
+hub: split_south 1 -3 [color=cyan max_drones=3]
+ 
+# === LAYER 2: Branch bodies (each branch stays wide) ===
+ 
+# North branch - fast priority lane
+hub: north_a 3 4 [zone=priority color=lime max_drones=4]
+hub: north_b 5 4 [zone=priority color=lime max_drones=4]
+hub: north_c 7 4 [zone=priority color=lime max_drones=3]
+hub: north_d 9 3 [color=cyan max_drones=3]
+ 
+# Center branch - restricted (slow but wide capacity)
+hub: center_a 3 0 [zone=restricted color=sienna max_drones=3]
+hub: center_b 5 0 [zone=restricted color=sienna max_drones=3]
+hub: center_c 7 0 [zone=restricted color=sienna max_drones=3]
+hub: center_d 9 0 [color=cyan max_drones=3]
+ 
+# South branch - normal + one priority boost
+hub: south_a 3 -4 [color=blue max_drones=4]
+hub: south_b 5 -4 [color=blue max_drones=4]
+hub: south_c 7 -3 [zone=priority color=lime max_drones=3]
+hub: south_d 9 -3 [color=cyan max_drones=3]
+ 
+# === LAYER 3: Lateral connectors (allow overflow between branches mid-route) ===
+hub: cross_nc 6 2 [color=yellow max_drones=2]
+hub: cross_cs 6 -2 [color=yellow max_drones=2]
+ 
+# Blocked terrain forcing detour (no shortcut through center)
+hub: rock_nc 4 2 [zone=blocked color=gray]
+hub: rock_cs 4 -2 [zone=blocked color=gray]
+ 
+# === LAYER 4: Three independent arrival gates (one per branch) ===
+# Each gate feeds the goal directly and independently
+hub: gate_north 11 3 [color=orange max_drones=3]
+hub: gate_center 11 0 [color=orange max_drones=3]
+hub: gate_south 11 -3 [color=orange max_drones=3]
+ 
+# === DESTINATION: wide goal accepts all 3 gates simultaneously ===
+end_hub: goal 13 0 [color=gold max_drones=40]
+ 
+# =====================
+# CONNECTIONS
+# =====================
+ 
+# Source -> Layer 1 (high throughput entry)
+connection: source-split_north [max_link_capacity=4]
+connection: source-split_center [max_link_capacity=4]
+connection: source-split_south [max_link_capacity=4]
+ 
+# Layer 1 -> Branch bodies
+connection: split_north-north_a
+connection: split_center-center_a
+connection: split_south-south_a
+ 
+# North branch segments
+connection: north_a-north_b
+connection: north_b-north_c
+connection: north_c-north_d
+ 
+# Center branch segments
+connection: center_a-center_b
+connection: center_b-center_c
+connection: center_c-center_d
+ 
+# South branch segments
+connection: south_a-south_b
+connection: south_b-south_c
+connection: south_c-south_d
+ 
+# Lateral connectors (mid-route overflow, after the blocked rocks)
+connection: north_b-cross_nc
+connection: center_b-cross_nc
+connection: center_b-cross_cs
+connection: south_b-cross_cs
+ 
+connection: cross_nc-north_c
+connection: cross_nc-center_c
+connection: cross_cs-center_c
+connection: cross_cs-south_c
+ 
+# Branch ends -> independent arrival gates
+connection: north_d-gate_north [max_link_capacity=3]
+connection: center_d-gate_center [max_link_capacity=3]
+connection: south_d-gate_south [max_link_capacity=3]
+ 
+# Small cross-connections near goal (last-minute lane change allowed)
+connection: north_d-gate_center [max_link_capacity=1]
+connection: south_d-gate_center [max_link_capacity=1]
+ 
+# All 3 gates -> goal (independent, parallel arrivals)
+connection: gate_north-goal [max_link_capacity=3]
+connection: gate_center-goal [max_link_capacity=3]
+connection: gate_south-goal [max_link_capacity=3]
+ 
+# Blocked terrain connections (visual graph integrity — algorithm must avoid these)
+# rock_nc (4,2): sits between north branch and center branch
+connection: split_north-rock_nc
+connection: north_a-rock_nc
+connection: center_a-rock_nc
+connection: rock_nc-cross_nc
+ 
+# rock_cs (4,-2): sits between center branch and south branch
+connection: split_south-rock_cs
+connection: south_a-rock_cs
+connection: center_a-rock_cs
+connection: rock_cs-cross_cs

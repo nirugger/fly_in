@@ -1,4 +1,5 @@
 import pygame
+from rendering.data import TEXT_COLOR
 Color = tuple[int, int, int]
 
 
@@ -7,8 +8,12 @@ def draw_circle(
         color: Color,
         center: tuple[int, int],
         radius: float,
+        width: int = 0,
+        edge: bool = False
         ) -> None:
-    pygame.draw.circle(surface, color, center, radius)
+    pygame.draw.circle(surface, color, center, radius, width)
+    if edge:
+        pygame.draw.circle(surface, (0, 0, 0), center, radius, 2)
 
 
 def draw_line(
@@ -55,7 +60,7 @@ def draw_hud(
     surface.blit(text_surface, centered_position)
 
 
-def draw_key(
+def draw_button(
         surface: pygame.Surface,
         text: str,
         position: tuple[int, int],
@@ -117,12 +122,12 @@ def draw_tooltip(
 
     pygame.draw.rect(
         surface=surface,
-        color=(242, 242, 242),
+        color=TEXT_COLOR,
         rect=pygame.Rect(
             tooltip_x, tooltip_y,
             tooltip_w,
             tooltip_h),
-        width=3
+        width=2
     )
 
     for i, line in enumerate(lines):

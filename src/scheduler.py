@@ -2,7 +2,6 @@ from src.pathfinder import Pathfinder
 from src.graph import Graph
 from src.drone import Drone
 from src.zone import Zone
-# from src.types import Path
 
 
 class Scheduler:
@@ -17,13 +16,21 @@ class Scheduler:
         self.pathfinder = pathfinder
         self.unassigned_drones = [drone for drone in self.graph.drones]
 
-    def assign_path(self, drone: Drone, path: list[Zone], turn: int) -> None:
+    def assign_path(
+            self,
+            drone: Drone,
+            path: list[Zone],
+            turn: int,
+            cost: int
+            ) -> None:
 
         for t in range(0, turn):
             drone.path.append((t, self.graph.start))
 
         for i, zone in enumerate(path[1:]):
             drone.path.append((i + turn, zone))
+
+        drone.path_cost = cost
 
     def schedule_drones(self) -> None:
 
@@ -42,10 +49,13 @@ class Scheduler:
                         min_cost + (len(self.unassigned_drones) // min_cap)):
                     break
 
-                for i in range(current_cap):
+                for _ in range(current_cap):
                     if self.unassigned_drones:
                         self.assign_path(
-                            self.unassigned_drones.pop(0), current_path, turn
+                            self.unassigned_drones.pop(0),
+                            current_path,
+                            turn,
+                            current_cost
                         )
 
                 if not self.unassigned_drones:

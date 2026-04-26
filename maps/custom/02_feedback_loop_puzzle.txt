@@ -1,6 +1,6 @@
 # Custom Level 2: Feedback loop puzzle with resource sharing
 # Drones must be routed efficiently around a cycle with limited shared resources
-nb_drones: 100
+nb_drones: 45
 
 start_hub: start 0 -2 [color=green max_drones=10]
 

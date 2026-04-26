@@ -21,6 +21,7 @@ class Drone:
         """
         self.drone_id = drone_id
         self.path: list[tuple[int, Zone]] = []
+        self.path_cost: int = 0
         self.drones_in_zones: int = 1
         self.orbit_offset: float = 0
         self.max_orbit_reached: bool = False
