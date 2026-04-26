@@ -1,3 +1,5 @@
+"""Scheduler module for assigning paths to drones."""
+
 from src.pathfinder import Pathfinder
 from src.graph import Graph
 from src.drone import Drone
@@ -5,13 +7,19 @@ from src.zone import Zone
 
 
 class Scheduler:
+    """Assigns computed paths to drones in the simulation."""
 
     def __init__(
             self,
             graph: Graph,
             pathfinder: Pathfinder
             ) -> None:
+        """Initialize the scheduler.
 
+        Args:
+            graph (Graph): graph with zones and connections.
+            pathfinder (Pathfinder): pathfinder instance containing paths.
+        """
         self.graph = graph
         self.pathfinder = pathfinder
         self.unassigned_drones = [drone for drone in self.graph.drones]
@@ -23,7 +31,14 @@ class Scheduler:
             turn: int,
             cost: int
             ) -> None:
+        """Assign a path to a drone starting at a given turn.
 
+        Args:
+            drone (Drone): the drone to schedule.
+            path (list[Zone]): ordered list of zones for the path.
+            turn (int): turn at which the drone begins moving.
+            cost (int): final path cost assigned to the drone.
+        """
         for t in range(0, turn):
             drone.path.append((t, self.graph.start))
 
@@ -33,7 +48,11 @@ class Scheduler:
         drone.path_cost = cost
 
     def schedule_drones(self) -> None:
+        """Schedule all drones across available paths.
 
+        The scheduler assigns drones to sorted paths while respecting
+        capacity constraints and turn offsets.
+        """
         shortest_path = self.pathfinder.paths[0]
         min_cost = shortest_path['cost']
         min_cap = shortest_path['cap']

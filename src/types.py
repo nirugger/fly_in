@@ -72,6 +72,16 @@ class RawData(TypedDict):
 
 
 class Path(TypedDict):
+    """Typed representation of a valid path.
+
+    Args:
+        TypedDict (_type_): parent TypedDict Class.
+
+    Attributes:
+        path: A list of zones from start to end.
+        cap: Maximum path capacity.
+        cost: Total cost of the path.
+    """
     path: list[Zone]
     cap: int
     cost: int
@@ -79,5 +89,7 @@ class Path(TypedDict):
 
 @dataclass
 class RenderGrid:
+    """Render grid containing all zones and connections for display."""
+
     zones: list[Zone]
     connections: list[Connection]

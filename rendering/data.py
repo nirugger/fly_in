@@ -1,3 +1,5 @@
+"""Shared rendering constants and map selection metadata."""
+
 import os
 import random
 

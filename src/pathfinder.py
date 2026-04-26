@@ -1,39 +1,47 @@
+"""Pathfinder module for computing routes through the graph."""
+
 from src.graph import Graph
 from src.zone import Zone, ZoneType
 from src.types import Path
-import pygame
-import sys
+# import pygame
+# import sys
 
 
 class Pathfinder:
+    """Finds shortest available paths from the start to the end hub."""
 
     def __init__(
             self,
             graph: Graph
             ) -> None:
+        """Initialize the pathfinder and compute all valid paths.
 
+        Args:
+            graph (Graph): graph with zones and connections.
+        """
         self.graph = graph
         self.paths: list[Path] = []
         self._find_all_paths()
 
-    def _find_all_paths(
-            self
-            ) -> None:
+    def _find_all_paths(self) -> None:
+        """Compute all viable paths from start to end until exhaustion.
 
+        Paths are found iteratively using the current residual capacities.
+        """
         while self.find_next_shortest_path():
             self.update_max_capacity(self.paths[-1])
-        if not self.paths:
-            print("[ERROR]: "
-                  "the map has no valid solution\n")
-            pygame.quit()
-            sys.exit(1)
 
     def insert_sorted(
             self,
             lst: list[tuple[int, Zone]],
             item: tuple[int, Zone]
             ) -> None:
+        """Insert a queued item into a priority list in order.
 
+        Args:
+            lst (list[tuple[int, Zone]]): priority list of (cost, zone).
+            item (tuple[int, Zone]): item to insert.
+        """
         lst.append(item)
         lst.sort(
             key=lambda x: (
@@ -46,6 +54,11 @@ class Pathfinder:
             self,
             path_capacity: Path
             ) -> None:
+        """Decrease capacities along the most recently discovered path.
+
+        Args:
+            path_capacity (Path): path information containing capacity.
+        """
         path = path_capacity['path']
         capacity = path_capacity['cap']
 
@@ -71,7 +84,14 @@ class Pathfinder:
             self,
             path: list[Zone]
             ) -> int:
+        """Calculate the maximum number of drones that can use a path.
 
+        Args:
+            path (list[Zone]): ordered list of zones in the prospective path.
+
+        Returns:
+            int: maximum capacity based on zone and connection limits.
+        """
         max_capacity = len(self.graph.drones)
         for i in range(len(path) - 1):
             connection = self.graph.get_connection_from_zones(
@@ -86,6 +106,11 @@ class Pathfinder:
     def build_next_shortest_path(
             self
             ) -> None:
+        """Construct the next shortest path using predecessor links.
+
+        The method also inserts intermediate restricted connection zones
+        when required.
+        """
         current: Zone = self.graph.end
         path: list[Zone] = []
 
@@ -108,10 +133,12 @@ class Pathfinder:
             cost=len(path) - 1
         ))
 
-    def find_next_shortest_path(
-            self
-            ) -> bool:
+    def find_next_shortest_path(self) -> bool:
+        """Find the next shortest path from start to end.
 
+        Returns:
+            bool: True when a path was found, False otherwise.
+        """
         for zone in self.graph.finder_grid:
             zone.prev = None
 

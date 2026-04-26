@@ -1,3 +1,5 @@
+"""Drawing helper functions for the Pygame renderer."""
+
 import pygame
 from rendering.data import TEXT_COLOR
 Color = tuple[int, int, int]
@@ -11,6 +13,16 @@ def draw_circle(
         width: int = 0,
         edge: bool = False
         ) -> None:
+    """Draw a circle on the target surface.
+
+    Args:
+        surface (pygame.Surface): rendering surface.
+        color (Color): fill colour for the circle.
+        center (tuple[int, int]): circle center coordinates.
+        radius (float): circle radius.
+        width (int): line width, zero for filled circle.
+        edge (bool): when True, draw a black outline.
+    """
     pygame.draw.circle(surface, color, center, radius, width)
     if edge:
         pygame.draw.circle(surface, (0, 0, 0), center, radius, 2)
@@ -23,6 +35,15 @@ def draw_line(
         end: tuple[int, int],
         width: int
         ) -> None:
+    """Draw a line on the target surface.
+
+    Args:
+        surface (pygame.Surface): rendering surface.
+        color (Color): line colour.
+        start (tuple[int, int]): start coordinates.
+        end (tuple[int, int]): end coordinates.
+        width (int): line thickness.
+    """
     pygame.draw.line(surface, color, start, end, width)
 
 
@@ -34,6 +55,19 @@ def draw_label(
         color: Color,
         offset: tuple[int, int] = (0, 0)
         ) -> pygame.Rect:
+    """Render centered text and return its bounding rect.
+
+    Args:
+        surface (pygame.Surface): surface to draw on.
+        text (str): text to render.
+        position (tuple[int, int]): center position for the label.
+        font (pygame.font.Font): font for rendering.
+        color (Color): text color.
+        offset (tuple[int, int], optional): pixel offset from center.
+
+    Returns:
+        pygame.Rect: bounding rectangle of the rendered label.
+    """
 
     text_surface = font.render(text, True, color)
     width, height = font.size(text)
@@ -51,6 +85,16 @@ def draw_hud(
         color: Color,
         offset: tuple[int, int] = (0, 0)
         ) -> None:
+    """Render HUD text at a specified position.
+
+    Args:
+        surface (pygame.Surface): render target.
+        text (str): text to display.
+        position (tuple[int, int]): top-left reference position.
+        font (pygame.font.Font): font for rendering.
+        color (Color): text color.
+        offset (tuple[int, int], optional): pixel offset from 'position'.
+    """
 
     text_surface = font.render(text, True, color)
     centered_position = (
@@ -68,6 +112,19 @@ def draw_button(
         color: Color,
         offset: tuple[int, int] = (0, 0)
         ) -> pygame.Rect:
+    """Render a button label and return its bounding rectangle.
+
+    Args:
+        surface (pygame.Surface): surface to draw on.
+        text (str): label text.
+        position (tuple[int, int]): upper-left base position.
+        font (pygame.font.Font): font to use.
+        color (Color): text color.
+        offset (tuple[int, int], optional): translation offset.
+
+    Returns:
+        pygame.Rect: rectangle containing the rendered button text.
+    """
 
     text_surface = font.render(text, True, color)
     centered_position = (
@@ -87,6 +144,16 @@ def draw_tooltip(
         font: pygame.font.Font,
         color: Color,
         ) -> None:
+    """Draw a tooltip box with multiple lines of text.
+
+    Args:
+        surface (pygame.Surface): surface to draw on.
+        screen_size (tuple[int, int]): size of the screen in pixels.
+        lines (list[str]): tooltip text lines.
+        pos (tuple[int, int]): preferred tooltip origin.
+        font (pygame.font.Font): font for tooltip text.
+        color (Color): text color.
+    """
 
     line_height = font.get_linesize()
     max_width = max(font.size(line)[0] for line in lines)

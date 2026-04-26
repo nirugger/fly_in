@@ -7,17 +7,16 @@ from src.zone import Zone
 
 
 class Drone:
-    """Drone class."""
+    """Represents a single drone in the simulation."""
 
     def __init__(
             self,
             drone_id: int,
             ) -> None:
-        """Init a Drone.
+        """Initialize a Drone.
 
         Args:
             drone_id (int): identification number of the Drone.
-            start_zone (str): the starting Zone of the Graph.
         """
         self.drone_id = drone_id
         self.path: list[tuple[int, Zone]] = []
@@ -30,13 +29,14 @@ class Drone:
             self,
             t: int
             ) -> Zone | None:
-        """Ask in which Zone will the Drone be in a given turn.
+        """Return the zone occupied by the drone at a specific turn.
 
         Args:
-            t (int): the given turn.
+            t (int): the turn number to query.
 
         Returns:
-            str | None: Zone name at turn t | None if 'turn' not in path.
+            Zone | None: Zone at turn t, or None if the drone is not scheduled
+            at that turn.
         """
         for turn, pos in self.path:
             if turn == t:
@@ -47,14 +47,13 @@ class Drone:
             self,
             t: int
             ) -> bool:
-        """Ask if Drone has changed Zone from previous given turn.
+        """Return whether the drone changed zone at the given turn.
 
         Args:
-            t (int): the given turn.
+            t (int): the turn number to compare.
 
         Returns:
-            bool: 'True' if Drone has changed Zone
-            bool: 'False if Drone hasn't.
+            bool: True when the drone moved between turn t-1 and turn t.
         """
         if t == 0:
             return False

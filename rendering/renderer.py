@@ -1,3 +1,9 @@
+"""Rendering engine for the Fly In simulation.
+
+This module provides rendering, input handling, and UI overlays for the
+simulation scene.
+"""
+
 import pygame
 import sys
 import hashlib
@@ -12,12 +18,19 @@ from rendering.draw import (draw_circle, draw_line, draw_label, draw_tooltip,
 
 
 class Renderer:
+    """Display simulation state and manage playback controls."""
 
     def __init__(
             self,
             screen: pygame.Surface,
             graph: Graph,
     ) -> None:
+        """Initialize the renderer with the game screen and graph.
+
+        Args:
+            screen (pygame.Surface): display surface.
+            graph (Graph): simulation graph containing zones and drones.
+        """
 
         self.screen = screen
         self.clock = pygame.time.Clock()
@@ -25,7 +38,7 @@ class Renderer:
         self.drones = self.graph.drones
         self.current_turn: float = 0.0
         self.paused: bool = True
-        self.speed: float = 1.0
+        self.speed: float = 0.5
         self.max_turn = max(
             turn for drone in self.drones
             for turn, _ in drone.path
@@ -66,6 +79,12 @@ class Renderer:
     def _compute_layout(
             self
     ) -> dict[Zone, tuple[int, int]]:
+        """Compute screen positions for every zone.
+
+        Returns:
+            dict[Zone, tuple[int, int]]: mapping from zones to pixel
+                coordinates.
+        """
 
         zones = self.graph.render_grid.zones
         xs = [zone.x for zone in zones]
@@ -119,13 +138,19 @@ class Renderer:
         return positions
 
     def _compute_percentage(self) -> float:
-        # current : max = x : 100.0
-        # x = current * 100.0 / max
+        """Return the completion percentage of the current simulation.
+
+        Returns:
+            float: percentage of current turn over maximum turn.
+        """
         return round(self.current_turn * 100 / self.max_turn, 2)
 
-    def run(
-        self
-    ) -> None:
+    def run(self) -> None:
+        """Start the renderer main loop.
+
+        The loop handles event processing, updates, and drawing until the
+        user returns to the menu or quits the program.
+        """
 
         while True:
             dt = self.clock.tick(60) / 1000.0
@@ -141,7 +166,6 @@ class Renderer:
                 self.current_turn = 0.0
                 self.last_int_turn = -1
                 self.speed = 1.0
-                # self._reset_drones_sync()
                 self.paused = True
 
             for drone in self.drones:
@@ -152,7 +176,7 @@ class Renderer:
             self.drones_action_map = self._drones_action_map()
             current_int_turn = int(self.current_turn)
             if self.last_int_turn != current_int_turn:
-                self.drones_action_map = self._drones_action_map(pause=True)
+                self.drones_action_map = self._drones_action_map()
                 self._reset_drones_sync()
                 self.last_int_turn = current_int_turn
 
@@ -163,6 +187,14 @@ class Renderer:
                 return
 
     def _get_zone_color(self, zone: Zone) -> tuple[int, int, int]:
+        """Resolve the display color for a zone.
+
+        Args:
+            zone (Zone): zone to color.
+
+        Returns:
+            tuple[int, int, int]: RGB color value.
+        """
         string = zone.color
         if string == "None":
             return (210, 210, 215)
@@ -172,14 +204,24 @@ class Renderer:
             color = self._get_color_from_string(string)
         return color
 
-    def _get_color_from_string(self, string: str) -> tuple[int, int, int]:
+    def _get_color_from_string(
+            self,
+            string: str
+            ) -> tuple[int, int, int]:
+        """Generate a deterministic RGB color from a string.
+
+        Args:
+            string (str): input string to hash.
+
+        Returns:
+            tuple[int, int, int]: derived RGB color.
+        """
         digested = hashlib.md5(string.encode()).digest()
         color = (digested[0], digested[1], digested[2])
         return color
 
-    def _draw_finish(
-            self
-    ) -> None:
+    def _draw_finish(self) -> None:
+        """Draw the simulation completion overlay."""
 
         cx, cy = (self.screen.get_width() // 2,
                   self.screen.get_height() // 2)
@@ -202,13 +244,11 @@ class Renderer:
             "SIMULATION COMPLETE",
             (cx, cy),
             self.title_font,
-            TEXT_COLOR,
-            (0, 0)
+            TEXT_COLOR
         )
 
-    def _draw_frame(
-            self
-    ) -> None:
+    def _draw_frame(self) -> None:
+        """Render the current simulation frame."""
 
         self.screen.fill((5, 10, 15))
         zone_radius: float = 20
@@ -265,7 +305,10 @@ class Renderer:
                 ]
                 neighbors = self._get_neighbors(hz)
                 for z in neighbors:
-                    lines.append(f"cost {z.movement_cost()} → {z.name}")
+                    cost = (z.movement_cost()
+                            if z.zone_type is not ZoneType.BLOCKED
+                            else 'X')
+                    lines.append(f"cost {cost} → {z.name}")
                     # match z.zone_type:
                     #     case ZoneType.NORMAL:
                     #         z_color = COLORS['highlight_normal']
@@ -352,7 +395,7 @@ class Renderer:
         #     color=TEXT_COLOR
         # )
 
-        font_x, font_y = self.title_font.size("KEYS")
+        font_x, font_y = self.title_font.size("DATA")
         self.buttons['keys'] = draw_button(
             surface=self.screen,
             text="KEYS",
@@ -438,10 +481,13 @@ class Renderer:
                 color=TEXT_COLOR
             )
 
-    def _drones_action_map(
-            self,
-            pause: bool = False
-    ) -> dict[str, int]:
+    def _drones_action_map(self) -> dict[str, int]:
+        """Calculate drone state counts for the current turn.
+
+        Returns:
+            dict[str, int]: counts for waiting, prepping, moving, and
+                arrived drones.
+        """
 
         waiting: int = 0
         prepping: int = 0
@@ -487,7 +533,15 @@ class Renderer:
     def _drone_position(
             self,
             drone: Drone
-    ) -> tuple[int, int] | None:
+            ) -> tuple[int, int] | None:
+        """Compute the current screen position of a drone.
+
+        Args:
+            drone (Drone): drone to position.
+
+        Returns:
+            tuple[int, int] | None: screen coordinates or None if unavailable.
+        """
 
         zone_a = self._position_this_turn(drone)
         zone_b = self._position_next_turn(drone)
@@ -595,6 +649,14 @@ class Renderer:
             self,
             zone_radius: float
             ) -> Zone | None:
+        """Return the zone currently under the mouse cursor.
+
+        Args:
+            zone_radius (float): radius used for hit detection.
+
+        Returns:
+            Zone | None: hovered zone or None if none is hovered.
+        """
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
         for zone, pos in self.positions.items():
@@ -606,10 +668,12 @@ class Renderer:
                 return zone
         return None
 
-    def _hovered_button(
-            self,
-            ) -> str | None:
+    def _hovered_button(self) -> str | None:
+        """Return the currently hovered HUD button name.
 
+        Returns:
+            str | None: hovered button id or None.
+        """
         mx, my = pygame.mouse.get_pos()
         for name, button in self.buttons.items():
             if button.collidepoint(mx, my):
@@ -619,8 +683,15 @@ class Renderer:
     def _get_neighbors(
             self,
             zone: Zone
-    ) -> list[Zone]:
+            ) -> list[Zone]:
+        """Return rendered neighbor zones for a given zone.
 
+        Args:
+            zone (Zone): source zone to query.
+
+        Returns:
+            list[Zone]: list of adjacent zones.
+        """
         neighbors = []
         for connection in self.graph.render_grid.connections:
             if connection.zone_a is zone:
@@ -633,8 +704,15 @@ class Renderer:
     def _get_occupancy(
             self,
             zone: Zone
-    ) -> list[Drone]:
+            ) -> list[Drone]:
+        """Return the list of drones currently occupying a zone.
 
+        Args:
+            zone (Zone): zone to inspect.
+
+        Returns:
+            list[Drone]: drones at the specified zone.
+        """
         occupancy: list[Drone] = []
         for drone in self.drones:
             if zone is drone.position_at_turn(int(self.current_turn)):
@@ -649,8 +727,20 @@ class Renderer:
             center_y: int,
             mult: float,
             waiting: bool = False
-    ) -> tuple[int, int]:
+            ) -> tuple[int, int]:
+        """Compute a drone position on an orbital layout.
 
+        Args:
+            drone (Drone): drone being positioned.
+            drone_list (list[Drone]): other drones sharing the same space.
+            center_x (int): center X coordinate.
+            center_y (int): center Y coordinate.
+            mult (float): orbit multiplier.
+            waiting (bool): when True, use waiting orbit logic.
+
+        Returns:
+            tuple[int, int]: screen coordinates for the drone.
+        """
         i = drone_list.index(drone)
         angle = (
             self.drone_angles[drone.drone_id]
@@ -671,21 +761,6 @@ class Renderer:
             # wating drones rotate counter clockwise
             x = center_x - int(orbit_r * math.cos(angle))
 
-        # if drone.max_orbit_reached is True:
-        #     orbit_r = (self.zone_radius * mult) + drone.orbit_offset
-        #     drone.orbit_offset += 1
-        #     drone.orbit_span_counter += 1
-        # else:
-        #     orbit_r = (self.zone_radius * mult) + drone.orbit_offset
-        #     drone.orbit_offset -= 1
-        #     drone.orbit_span_counter += 1
-
-        # if drone.orbit_span_counter >= self.orbit_span:
-        #     drone.max_orbit_reached = not drone.max_orbit_reached
-        #     drone.orbit_span_counter = 0
-        # if drone.orbit_span_counter <= 0:
-        #     drone.max_orbit_reached = False
-
         else:
             x = center_x + int(orbit_r * math.cos(angle))
 
@@ -695,22 +770,43 @@ class Renderer:
     def _position_this_turn(
             self,
             drone: Drone
-    ) -> Zone | None:
+            ) -> Zone | None:
+        """Return the zone of a drone at the current turn.
 
+        Args:
+            drone (Drone): drone to query.
+
+        Returns:
+            Zone | None: current zone of the drone.
+        """
         return drone.position_at_turn(int(self.current_turn))
 
     def _position_next_turn(
             self,
             drone: Drone
-    ) -> Zone | None:
+            ) -> Zone | None:
+        """Return the zone of a drone on the next turn.
 
+        Args:
+            drone (Drone): drone to query.
+
+        Returns:
+            Zone | None: next zone of the drone.
+        """
         return drone.position_at_turn(int(self.current_turn) + 1)
 
     def _later_next_turn(
             self,
             drone: Drone
-    ) -> Zone | None:
+            ) -> Zone | None:
+        """Return the zone of a drone at the turn after the next.
 
+        Args:
+            drone (Drone): drone to query.
+
+        Returns:
+            Zone | None: zone after the next turn.
+        """
         return drone.position_at_turn(
                 math.ceil(self.current_turn + 1)
             )
@@ -721,7 +817,13 @@ class Renderer:
             angles: bool = True,
             zones: bool = True
             ) -> None:
+        """Reset drone synchronization state for rendering.
 
+        Args:
+            orbit (bool): reset orbit offsets.
+            angles (bool): reset drone rotation angles.
+            zones (bool): reset per-zone occupancy counters.
+        """
         for drone in self.drones:
             if orbit is True:
                 drone.orbit_offset = 0
@@ -730,12 +832,9 @@ class Renderer:
             if zones is True:
                 drone.drones_in_zones = 1
 
-    def _handle_events(
-            self
-    ) -> None:
-
+    def _handle_events(self) -> None:
+        """Handle keyboard and window events for the renderer."""
         for event in pygame.event.get():
-
             if event.type == pygame.KEYDOWN:
 
                 if event.key == pygame.K_SPACE:

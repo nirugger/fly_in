@@ -4,11 +4,7 @@ Each Connection represents an edge of the graph.
 """
 
 from __future__ import annotations
-# from typing import TYPE_CHECKING
 from src.zone import Zone, ZoneType
-
-# if TYPE_CHECKING:
-#     from src.drone import Drone
 
 
 class Connection:
@@ -34,13 +30,9 @@ class Connection:
         self.residual = max_link_capacity
         self.name = f"{self.zone_a.name}-{self.zone_b.name}"
         self._init_zone_c()
-        # self.drones_in_transit: list[Drone] = []
-        # self.turn_in_transit = 0 | 1
 
-    def _init_zone_c(
-            self
-            ) -> None:
-
+    def _init_zone_c(self) -> None:
+        """Initialize the intermediate connection zone for restricted edges."""
         if (self.zone_a.zone_type is ZoneType.RESTRICTED or
                 self.zone_b.zone_type is ZoneType.RESTRICTED):
             self.zone_c = Zone(
@@ -53,15 +45,6 @@ class Connection:
                 max_drones=self.max_link_capacity,
                 color="None"
             )
-
-    # def has_capacity(self) -> bool:
-    #     """Ask if there is space for a Drone to transit.
-
-    #     Returns:
-    #         'True' if Connection has space.
-    #         'False' if Connection is full.
-    #     """
-    #     return len(self.drones_in_transit) < self.max_link_capacity
 
     def get_other(
             self,
@@ -90,19 +73,3 @@ class Connection:
             int: the turns needed to traverse the Connection.
         """
         return self.get_other(from_zone).movement_cost()
-
-    # def add_drone(self, drone: Drone) -> None:
-    #     """Add a Drone to the Connection.
-
-    #     Args:
-    #         drone (Drone): the Drone to be added.
-    #     """
-    #     self.drones_in_transit.append(drone)
-
-    # def remove_drone(self, drone: Drone) -> None:
-    #     """Remove a Drone from the Connection.
-
-    #     Args:
-    #         drone (Drone): the Drone to be removed.
-    #     """
-    #     self.drones_in_transit.remove(drone)

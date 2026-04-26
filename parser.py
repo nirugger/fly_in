@@ -1,15 +1,17 @@
 """Module containing all parsing methhots, parsing errors and Parser class."""
 from __future__ import annotations
-from typing import TYPE_CHECKING
-import sys
 from src.types import ZoneData, ConnectionData, RawData
 from src.zone import ZoneType
-
-if TYPE_CHECKING:
-    ...
+import sys
 
 
 class ParseError(Exception):
+    """Raised when a map configuration line is invalid.
+
+    Attributes:
+        configuration (str): explanatory manual text for correct usage.
+        line_str (str): either 'line ' or empty string depending on context.
+    """
 
     def __init__(
             self,
@@ -17,6 +19,7 @@ class ParseError(Exception):
             message: str,
             no_line: bool = False
        ) -> None:
+        """Initialize  personalized error class."""
         self.configuration = self.manual()
         self.line_str = self._flag(no_line)
 
@@ -27,9 +30,22 @@ class ParseError(Exception):
         )
 
     def _flag(self, no_line: bool) -> str:
+        """Return the line prefix for error text.
+
+        Args:
+            no_line (bool): when True, omit the line prefix.
+
+        Returns:
+            str: 'line ' or empty string.
+        """
         return "line " if not no_line else ""
 
     def manual(self) -> str:
+        """Return the parser manual text for invalid configuration errors.
+
+        Returns:
+            str: formatted usage help message.
+        """
         return (
          "╔═══════════════════════════════════════════════════════════════╗\n"
          "║ MANUAL FOR A CORRECT USAGE OF MAPFILE CONFIGURATION : READ IT ║\n"
@@ -81,40 +97,44 @@ class ParseError(Exception):
 
 
 class ParseWarning(Exception):
+    """Raised for non-fatal issues during parsing.
+
+    Warnings are printed but do not stop parsing immediately.
+    """
 
     def __init__(
             self,
             line_num: int,
             message: str
        ) -> None:
-
+        """Initialize  personalized error class."""
         super().__init__(
             "[WARNING]: "
             f"line {line_num}: {message}"
         )
 
 
-def parse_argv(argv: list[str]) -> str:
+# def parse_argv(argv: list[str]) -> str:
 
-    try:
-        path = argv[1]
+#     try:
+#         path = argv[1]
 
-    except IndexError:
-        print("select map:")
-        print(
-            "0: test\n"
-            "1: linear_path"
-        )
-        choice = input()
-        match choice:
-            case "0":
-                path = "maps/test/parsing_test.txt"
-            case "1":
-                path = "maps/easy/01_linear_path.txt"
-            case _:
-                print("\nfuck you\n")
-                sys.exit(1)
-    return path
+#     except IndexError:
+#         print("select map:")
+#         print(
+#             "0: test\n"
+#             "1: linear_path"
+#         )
+#         choice = input()
+#         match choice:
+#             case "0":
+#                 path = "maps/test/parsing_test.txt"
+#             case "1":
+#                 path = "maps/easy/01_linear_path.txt"
+#             case _:
+#                 print("\nfuck you\n")
+#                 sys.exit(1)
+#     return path
 
 
 class Parser:

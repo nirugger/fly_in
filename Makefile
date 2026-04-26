@@ -17,13 +17,10 @@ install:
 	@echo "$(GREEN)✓ Dependencies installed.$(RESET)"
 
 run:
-	$(UV) python3 main.py maps/test/color_test.txt
-
-test:
-	$(UV) python3 main.py maps/hard/03_ultimate_challenge.txt
+	$(UV) python3 main.py
 
 debug:
-	$(UV) python3 -m pdb main maps/test/parsing_test.txt
+	$(UV) python3 -m pdb main.py
 
 clean:
 	@find . -type d -name "__pycache__" -not -path "./.venv/*" | xargs rm -rf

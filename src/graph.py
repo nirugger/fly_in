@@ -16,11 +16,12 @@ class Graph:
             render_grid: RenderGrid,
             drones: list[Drone],
             ) -> None:
-        """Init a Graph.
+        """Initialize the Graph.
 
         Args:
-            grid: adjacency mapping Zone -> list of its Connections.
-            drones: fleet of Drone for this simulation.
+            finder_grid (dict[Zone, list[Connection]]): adjacency mapping.
+            render_grid (RenderGrid): grid used for rendering.
+            drones (list[Drone]): list of drones in the simulation.
         """
         self.finder_grid = finder_grid
         self.render_grid = render_grid
@@ -28,20 +29,19 @@ class Graph:
         self._set_pois()
 
     @classmethod
-    def build(
-        cls,
-        raw_data: RawData
-    ) -> "Graph":
-        """Build a Graph and Drone fleet from the parser's output.
+    def build_graph(
+            cls,
+            raw_data: RawData
+            ) -> "Graph":
+        """Construct a Graph from parsed raw data.
 
         Args:
-            raw_data (RawData): all data needed for a Graph initialization.
+            raw_data (RawData): parsed configuration data.
 
         Returns:
-            Graph: a fully initialized Graph instance.
+            Graph: initialized graph ready for scheduling.
         """
         zone_dict: dict[str, Zone] = {}
-
         for item in raw_data["zones"].values():
             zone_dict[item["name"]] = Zone(
                 name=item["name"],
@@ -97,9 +97,7 @@ class Graph:
             drones=drones
         )
 
-    def _set_pois(
-            self
-            ) -> None:
+    def _set_pois(self) -> None:
         """Locate and cache the start and end Zone references."""
         for zone in self.finder_grid:
             if zone.is_start:
@@ -111,7 +109,14 @@ class Graph:
             self,
             zone: Zone
             ) -> list[Connection]:
+        """Return all available connections from a given zone.
 
+        Args:
+            zone (Zone): source zone for the search.
+
+        Returns:
+            list[Connection]: available connections with remaining capacity.
+        """
         return [
             conn for conn in self.finder_grid[zone]
             if conn.residual > 0 and
@@ -123,7 +128,16 @@ class Graph:
             zone_a: Zone,
             zone_b: Zone
             ) -> Connection | None:
+        """Return the connection object linking two zones.
 
+        Args:
+            zone_a (Zone): first endpoint.
+            zone_b (Zone): second endpoint.
+
+        Returns:
+            Connection | None: the connecting edge or None when no direct
+            connection exists.
+        """
         if (zone_a.zone_type is ZoneType.CONNECTION
                 or zone_b.zone_type is ZoneType.CONNECTION):
             return None
@@ -152,9 +166,7 @@ class Graph:
             neighbors.append((neighbor, neighbor.movement_cost()))
         return neighbors
 
-    def get_pois(
-            self
-            ) -> tuple[Zone, Zone]:
+    def get_pois(self) -> tuple[Zone, Zone]:
         """Get the (start, end) Zone pair.
 
         Returns:
