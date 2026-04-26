@@ -4,18 +4,18 @@ Color = tuple[int, int, int]
 
 def draw_circle(
         surface: pygame.Surface,
+        color: Color,
         center: tuple[int, int],
         radius: float,
-        color: Color,
         ) -> None:
     pygame.draw.circle(surface, color, center, radius)
 
 
 def draw_line(
         surface: pygame.Surface,
+        color: Color,
         start: tuple[int, int],
         end: tuple[int, int],
-        color: Color,
         width: int
         ) -> None:
     pygame.draw.line(surface, color, start, end, width)
@@ -28,15 +28,14 @@ def draw_label(
         font: pygame.font.Font,
         color: Color,
         offset: tuple[int, int] = (0, 0)
-        ) -> None:
+        ) -> pygame.Rect:
 
     text_surface = font.render(text, True, color)
-    width, _ = font.size(text)
-    centered_position = (
-        position[0] - width // 2 + offset[0],
-        position[1] + offset[1]
-    )
-    surface.blit(text_surface, centered_position)
+    width, height = font.size(text)
+    x = position[0] - width // 2 + offset[0]
+    y = position[1] - height // 2 + offset[1]
+    surface.blit(text_surface, (x, y))
+    return pygame.Rect(x, y, width, height)
 
 
 def draw_hud(
@@ -49,12 +48,30 @@ def draw_hud(
         ) -> None:
 
     text_surface = font.render(text, True, color)
-    # width, _ = font.size(text)
     centered_position = (
         position[0] + offset[0],
         position[1] + offset[1]
     )
     surface.blit(text_surface, centered_position)
+
+
+def draw_key(
+        surface: pygame.Surface,
+        text: str,
+        position: tuple[int, int],
+        font: pygame.font.Font,
+        color: Color,
+        offset: tuple[int, int] = (0, 0)
+        ) -> pygame.Rect:
+
+    text_surface = font.render(text, True, color)
+    centered_position = (
+        position[0] + offset[0],
+        position[1] + offset[1]
+    )
+    w, h = font.size(text)
+    surface.blit(text_surface, centered_position)
+    return pygame.Rect(centered_position[0], centered_position[1], w, h)
 
 
 def draw_tooltip(
@@ -68,10 +85,11 @@ def draw_tooltip(
 
     line_height = font.get_linesize()
     max_width = max(font.size(line)[0] for line in lines)
-    padding = 8
+    padding_x = 12
+    padding_y = 12
 
-    tooltip_w = max_width + padding * 2
-    tooltip_h = line_height * len(lines) + padding * 2
+    tooltip_w = max_width + padding_x * 2
+    tooltip_h = line_height * len(lines) + padding_y * 2
 
     screen_cx = screen_size[0] // 2
     if pos[0] > screen_cx:
@@ -86,12 +104,13 @@ def draw_tooltip(
         tooltip_y = pos[1] - tooltip_h
 
     overlay = pygame.Surface(
-        (max_width + padding * 2, line_height * len(lines) + padding * 2),
+        (tooltip_w, tooltip_h),
         pygame.SRCALPHA
     )
+
     pygame.draw.rect(
         overlay,
-        (30, 34, 44, 180),
+        (30, 34, 44, 220),
         overlay.get_rect()
     )
     surface.blit(overlay, (tooltip_x, tooltip_y))
@@ -101,8 +120,8 @@ def draw_tooltip(
         color=(242, 242, 242),
         rect=pygame.Rect(
             tooltip_x, tooltip_y,
-            max_width + padding * 2,
-            line_height * len(lines) + padding * 2),
+            tooltip_w,
+            tooltip_h),
         width=3
     )
 
@@ -110,5 +129,5 @@ def draw_tooltip(
         text_surface = font.render(line, True, color)
         surface.blit(
             text_surface,
-            (tooltip_x + padding, tooltip_y + padding + i * line_height)
+            (tooltip_x + padding_x, tooltip_y + padding_y + i * line_height)
         )

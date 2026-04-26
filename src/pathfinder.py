@@ -1,6 +1,7 @@
 from src.graph import Graph
 from src.zone import Zone, ZoneType
 from src.types import Path
+import pygame
 import sys
 
 
@@ -24,6 +25,7 @@ class Pathfinder:
         if not self.paths:
             print("[ERROR]: "
                   "the map has no valid solution\n")
+            pygame.quit()
             sys.exit(1)
 
     def insert_sorted(
@@ -96,7 +98,8 @@ class Pathfinder:
                         for connection in self.graph.finder_grid[current]
                         if connection.get_other(current) is current.prev
                     )
-                    path.append(connection_zone)
+                    if connection_zone:
+                        path.append(connection_zone)
                 current = current.prev
 
         self.paths.append(Path(

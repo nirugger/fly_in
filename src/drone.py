@@ -21,6 +21,9 @@ class Drone:
         """
         self.drone_id = drone_id
         self.path: list[tuple[int, Zone]] = []
+        self.drones_in_zones: int = 1
+        self.orbit_offset: float = 0
+        self.max_orbit_reached: bool = False
 
     def position_at_turn(
             self,
