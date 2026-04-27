@@ -4,6 +4,11 @@ from src.types import ZoneData, ConnectionData, RawData
 from src.zone import ZoneType
 import sys
 
+RED = "\033[0;31m"
+GREEN = "\033[0;32m"
+YELLOW = "\033[0;33m"
+RESET = "\033[0m"
+
 
 class ParseError(Exception):
     """Raised when a map configuration line is invalid.
@@ -24,7 +29,7 @@ class ParseError(Exception):
         self.line_str = self._flag(no_line)
 
         super().__init__(
-            "[ERROR]: "
+            f"{RED}[ERROR]:{RESET} "
             f"{self.line_str}{line_num}: {message}"
             # f"\n\n{self.configuration}\n\n"
         )
@@ -109,7 +114,7 @@ class ParseWarning(Exception):
        ) -> None:
         """Initialize  personalized error class."""
         super().__init__(
-            "[WARNING]: "
+            f"{YELLOW}[WARNING]:{RESET} "
             f"line {line_num}: {message}"
         )
 

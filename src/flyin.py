@@ -15,7 +15,28 @@ from rendering.renderer import Renderer
 import pygame
 from rendering.menu import Menu, MenuState
 from rendering.data import RESOLUTION
-# import sys
+import sys
+import os
+from parser import RED, RESET
+
+output_path: str = "output/"
+
+map_names: dict[str, str] = {
+    'maps/easy/01_linear_path.txt': 'linear_path',
+    'maps/easy/02_simple_fork.txt': 'simple_fork',
+    'maps/easy/03_basic_capacity.txt': 'basic_capacity',
+    'maps/medium/01_dead_end_trap.txt': 'dead_end_trap',
+    'maps/medium/02_circular_loop.txt': 'circular_loop',
+    'maps/medium/03_priority_puzzle.txt': 'priority_puzzle',
+    'maps/hard/01_maze_nightmare.txt': 'maze_nightmare',
+    'maps/hard/02_capacity_hell.txt': 'capacity_hell',
+    'maps/hard/03_ultimate_challenge.txt': 'ultimate_challenge',
+    'maps/challenger/01_the_impossible_dream.txt': 'the_impossible_dream',
+    'maps/custom/01_custom_delta_v2.txt': 'river_delta',
+    'maps/custom/02_feedback_loop_puzzle.txt': 'feedback_loop',
+    'maps/custom/03_custom_highway.txt': 'highway_jam',
+    'maps/custom/04_custom_labyrinth_city.txt': 'labyrinth_city',
+}
 
 
 class FlyInSimulator:
@@ -55,31 +76,10 @@ class FlyInSimulator:
 
             scheduler = Scheduler(self.graph, pathfinder)
             scheduler.schedule_drones()
-            self.print_output()
+            self.write_output(path_to_map)
 
             renderer = Renderer(self.screen, self.graph)
             renderer.run()
-
-    def print_output(self) -> None:
-        """Print each drone movement by turn.
-
-        The output excludes start hub positions and shows the
-        destination zone for each drone at every simulated turn.
-        """
-        if not self.graph:
-            return
-
-        drones = self.graph.drones
-        turn_map = self._build_turn_map(drones)
-
-        for _, drone_zone in turn_map.items():
-            line = ""
-            for drone, zone in drone_zone:
-                if zone.is_start:
-                    continue
-                line += f"D{drone}-{zone.name} "
-            print(line)
-        print()
 
     def _build_turn_map(
             self, drones: list[Drone]
@@ -106,3 +106,50 @@ class FlyInSimulator:
         }
 
         return turn_map
+
+    def write_output(
+            self,
+            path_to_map: str
+            ) -> None:
+        """Print each drone movement by turn.
+
+        The output excludes start hub positions and shows the
+        destination zone for each drone at every simulated turn.
+        """
+        if not self.graph:
+            return
+
+        drones = self.graph.drones
+        turn_map = self._build_turn_map(drones)
+
+        try:
+            path = output_path + map_names[path_to_map] + '.txt'
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, 'w') as f:
+                for _, drone_zone in turn_map.items():
+                    line: list[str] = []
+                    for drone, zone in drone_zone:
+                        if zone.is_start:
+                            continue
+                        line.append(f"D{drone}-{zone.name}")
+                    f.write(" ".join(line))
+                    f.write('\n')
+
+        except KeyError:
+            print(f"{RED}[ERROR]:{RESET} "
+                  f"map not found in registry")
+
+        except FileNotFoundError:
+            print(f"{RED}[ERROR]:{RESET} "
+                  f"directory for {path} doesn't exist")
+            sys.exit(1)
+
+        except PermissionError:
+            print(f"{RED}[ERROR]:{RESET} "
+                  f"file {path} doesn't have permissions")
+            sys.exit(1)
+
+        except OSError as e:
+            print(f"{RED}[ERROR]:{RESET} "
+                  f"couldn't write to {path}: {e}")
+            sys.exit(1)

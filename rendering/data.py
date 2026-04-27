@@ -28,6 +28,7 @@ FONT_REGULAR: str = os.path.join(FONT_DIR, 'JetBrainsMono-Regular.ttf')
 FONT_BOLD: str = os.path.join(FONT_DIR, 'JetBrainsMono-Bold.ttf')
 
 TEXT_COLOR: tuple[int, int, int] = (242, 242, 242)
+INVALID_COLOR: tuple[int, int, int] = (110, 110, 120)
 DRONE_COLOR: tuple[int, int, int] = (220, 110, 110)
 
 MIN_INT: int = -2147483648

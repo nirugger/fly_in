@@ -23,14 +23,19 @@ debug:
 	$(UV) python3 -m pdb main.py
 
 clean:
+	@echo "$(YELLOW)→ Cleaning caches...$(RESET)"
 	@find . -type d -name "__pycache__" -not -path "./.venv/*" | xargs rm -rf
 	@find . -type d -name ".mypy_cache" -not -path "./.venv/*" | xargs rm -rf
 	@find . -type d -name "*.egg-info"  -not -path "./.venv/*" | xargs rm -rf
 	@find . -type d -name ".ruff_cache" -not -path "./.venv/*" | xargs rm -rf
+	@echo "$(GREEN)✓ Done.$(RESET)"
 
 fclean: clean
+	@echo "$(YELLOW)→ Cleaning deeper...$(RESET)"
+	@rm -rf output/
 	@rm -rf .cache/uv
 	@rm -rf .venv
+	@echo "$(GREEN)✓ Also done.$(RESET)"
 
 lint:
 	@echo "$(YELLOW)→ Running flake8...$(RESET)"
