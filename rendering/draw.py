@@ -68,7 +68,6 @@ def draw_label(
     Returns:
         pygame.Rect: bounding rectangle of the rendered label.
     """
-
     text_surface = font.render(text, True, color)
     width, height = font.size(text)
     x = position[0] - width // 2 + offset[0]
@@ -95,7 +94,6 @@ def draw_hud(
         color (Color): text color.
         offset (tuple[int, int], optional): pixel offset from 'position'.
     """
-
     text_surface = font.render(text, True, color)
     centered_position = (
         position[0] + offset[0],
@@ -125,7 +123,6 @@ def draw_button(
     Returns:
         pygame.Rect: rectangle containing the rendered button text.
     """
-
     text_surface = font.render(text, True, color)
     centered_position = (
         position[0] + offset[0],
@@ -154,7 +151,6 @@ def draw_tooltip(
         font (pygame.font.Font): font for tooltip text.
         color (Color): text color.
     """
-
     line_height = font.get_linesize()
     max_width = max(font.size(line)[0] for line in lines)
     padding_x = 12

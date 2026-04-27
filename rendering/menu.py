@@ -23,8 +23,8 @@ class MenuState(Enum):
 
 class Menu:
     """Handle menu rendering and map selection input."""
-
     def __init__(self, screen: pygame.Surface):
+        """Initialize a Menu object."""
         self.screen = screen
         self.center = (self.screen.get_width() // 2,
                        self.screen.get_height() // 2)
@@ -381,7 +381,6 @@ class Menu:
         Returns:
             str | None: button key when hovered, otherwise None.
         """
-
         mx, my = pygame.mouse.get_pos()
         for name, button in self.buttons.items():
             if button.collidepoint(mx, my):
@@ -394,7 +393,6 @@ class Menu:
         Returns:
             str | None: selected map path when a map choice is confirmed.
         """
-
         for event in pygame.event.get():
 
             if event.type == pygame.KEYDOWN:

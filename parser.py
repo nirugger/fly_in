@@ -1,4 +1,4 @@
-"""Module containing all parsing methhots, parsing errors and Parser class."""
+"""Module containing all parsing methots, parsing errors and Parser class."""
 from __future__ import annotations
 from src.types import ZoneData, ConnectionData, RawData
 from src.zone import ZoneType
@@ -80,7 +80,7 @@ class ParseError(Exception):
          "║ - there must be exactly one 'end_hub:' line in the mapfile    ║\n"
          "║ - 'name' must be unique for each hub.                         ║\n"
          "║ - 'name' can use any valid characters but dashes and spaces   ║\n"
-         "║ - 'x' and 'y' must be valid positive integers                 ║\n"
+         "║ - 'x' and 'y' must be valid integers                          ║\n"
          "║ - 'metadata=value' can be optionally selected as follows:     ║\n"
          "║ - 'zone' = 'normal' | 'blocked' | 'restricted' | 'priority'   ║\n"
          "║ - 'max_drones' = 'number' (greater-than-zero integer)         ║\n"
@@ -208,7 +208,10 @@ class Parser:
             else:
                 raise ParseError(
                     line_num,
-                    f"unrecognized line format: '{line}'"
+                    ("duplicate 'nb_drones' line"
+                     if line.startswith("nb_drones: ")
+                     else
+                     f"unrecognized line format: '{line}'")
                 )
 
     def _parse_nb_drones(self, line_num: int, line: str) -> None:
@@ -338,9 +341,7 @@ class Parser:
 
             valid_types = ["normal", "restricted", "blocked", "priority"]
             if parts[0] == "zone":
-                try:
-                    parts[1] in valid_types
-                except ValueError:
+                if parts[1] not in valid_types:
                     valid = [m.value for m in ZoneType]
                     raise ParseError(
                         line_num,
@@ -435,6 +436,12 @@ class Parser:
             )
 
         zone_a, zone_b = data[1].split('-')
+        if not zone_a or not zone_b:
+            raise ParseError(
+                line_num,
+                "zone names in connection cannot be empty"
+            )
+
         if zone_a == zone_b:
             raise ParseError(
                 line_num,

@@ -39,9 +39,9 @@ fclean: clean
 
 lint:
 	@echo "$(YELLOW)→ Running flake8...$(RESET)"
-	$(UV) flake8 main.py parser.py src/
+	$(UV) flake8 main.py parser.py src/ rendering/
 	@echo "$(YELLOW)→ Running mypy...$(RESET)"
-	$(UV) mypy main.py parser.py src/ \
+	$(UV) mypy main.py parser.py src/ rendering/ \
 				--warn-return-any \
 				--warn-unused-ignores \
 				--ignore-missing-imports \
@@ -51,9 +51,9 @@ lint:
 
 lint-strict:
 	@echo "$(YELLOW)→ Running flake8 (strict)...$(RESET)"
-	$(UV) flake8 main.py parser.py src/
+	$(UV) flake8 main.py parser.py src/ rendering/
 	@echo "$(YELLOW)→ Running mypy --strict...$(RESET)"
-	$(UV) mypy main.py parser.py src/ --strict
+	$(UV) mypy main.py parser.py src/ rendering/ --strict
 	@echo "$(YELLOW)→ Running ruff...$(RESET)"
-	$(UV) ruff check main.py parser.py src/
+	$(UV) ruff check main.py parser.py src/ rendering/
 	@echo "$(GREEN)✓ Strict lint passed.$(RESET)"

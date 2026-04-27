@@ -31,7 +31,6 @@ class Renderer:
             screen (pygame.Surface): display surface.
             graph (Graph): simulation graph containing zones and drones.
         """
-
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.graph = graph
@@ -85,7 +84,6 @@ class Renderer:
             dict[Zone, tuple[int, int]]: mapping from zones to pixel
                 coordinates.
         """
-
         zones = self.graph.render_grid.zones
         xs = [zone.x for zone in zones]
         ys = [zone.y for zone in zones]
@@ -151,7 +149,6 @@ class Renderer:
         The loop handles event processing, updates, and drawing until the
         user returns to the menu or quits the program.
         """
-
         while True:
             dt = self.clock.tick(60) / 1000.0
             self._handle_events()
@@ -222,7 +219,6 @@ class Renderer:
 
     def _draw_finish(self) -> None:
         """Draw the simulation completion overlay."""
-
         cx, cy = (self.screen.get_width() // 2,
                   self.screen.get_height() // 2)
 
@@ -249,7 +245,6 @@ class Renderer:
 
     def _draw_frame(self) -> None:
         """Render the current simulation frame."""
-
         self.screen.fill((5, 10, 15))
         zone_radius: float = 20
         drone_radius: float = 5
@@ -488,7 +483,6 @@ class Renderer:
             dict[str, int]: counts for waiting, prepping, moving, and
                 arrived drones.
         """
-
         waiting: int = 0
         prepping: int = 0
         moving: int = 0
@@ -542,7 +536,6 @@ class Renderer:
         Returns:
             tuple[int, int] | None: screen coordinates or None if unavailable.
         """
-
         zone_a = self._position_this_turn(drone)
         zone_b = self._position_next_turn(drone)
         t = self.current_turn - int(self.current_turn)
@@ -657,7 +650,6 @@ class Renderer:
         Returns:
             Zone | None: hovered zone or None if none is hovered.
         """
-
         mouse_x, mouse_y = pygame.mouse.get_pos()
         for zone, pos in self.positions.items():
             if zone.zone_type is ZoneType.CONNECTION:
