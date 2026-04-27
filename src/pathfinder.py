@@ -117,7 +117,8 @@ class Pathfinder:
         if current.prev:
             while current:
                 path.append(current)
-                if current.zone_type is ZoneType.RESTRICTED:
+                if (current.zone_type is ZoneType.RESTRICTED
+                        and not current.is_start):
                     connection_zone = next(
                         connection.zone_c
                         for connection in self.graph.finder_grid[current]

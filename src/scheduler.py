@@ -53,9 +53,13 @@ class Scheduler:
         The scheduler assigns drones to sorted paths while respecting
         capacity constraints and turn offsets.
         """
-        shortest_path = self.pathfinder.paths[0]
-        min_cost = shortest_path['cost']
-        min_cap = shortest_path['cap']
+        min_cost = self.pathfinder.paths[0]['cost']
+
+        total_min_cap = sum([
+            path['cap']
+            for path in self.pathfinder.paths
+            if path['cost'] == min_cost
+        ])
 
         turn = 1
 
@@ -65,7 +69,9 @@ class Scheduler:
                 current_cap = path_cap_cost['cap']
                 current_cost = path_cap_cost['cost']
                 if (current_cost >
-                        min_cost + (len(self.unassigned_drones) // min_cap)):
+                        min_cost + (
+                            len(self.unassigned_drones) // total_min_cap
+                        )):
                     break
 
                 for _ in range(current_cap):
