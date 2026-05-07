@@ -361,7 +361,6 @@ class Renderer:
             offset: int = 0
 
             for hc in hovered_cs:
-
                 c_lines = [
                     f"NAME : {hc.name}",
                     f"ROOM : {hc.max_link_capacity}",
@@ -380,11 +379,19 @@ class Renderer:
                 if start is None:
                     continue
 
+                live = ""
+                if self.paused and self.current_turn.is_integer():
+                    counter = 0
+                    for d in self.drones:
+                        if d.position_at_turn(int(self.current_turn)) is hz:
+                            counter += 1
+                    live = f"{counter} / "
+
                 s = "s" if hz.max_drones > 1 else ""
                 z_lines: list[str] = [
                     f"NAME  : {hz.name}",
                     f"TYPE  : {hz.zone_type.value}",
-                    f"ROOM  : {hz.max_drones} drone{s}",
+                    f"ROOM  : {live}{hz.max_drones} drone{s}",
                     f"COLOR : {hz.color}"
                 ]
 
@@ -476,7 +483,7 @@ class Renderer:
                     "→ : next turn",
                     "← : prev turn",
                     "",
-                    "V : path view"
+                    "V : path view",
                     "R : rainbow",
                     "Q : quit",
                     "",

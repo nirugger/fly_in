@@ -14,10 +14,10 @@ MAPS = {
     '02_h': 'maps/hard/02_capacity_hell.txt',
     '03_h': 'maps/hard/03_ultimate_challenge.txt',
     '04_h': 'maps/challenger/01_the_impossible_dream.txt',
-    '01_c': 'maps/custom/01_custom_delta_v2.txt',
+    '01_c': 'maps/custom/03_custom_highway.txt',
     '02_c': 'maps/custom/02_feedback_loop_puzzle.txt',
-    '03_c': 'maps/custom/03_custom_highway.txt',
-    '04_c': 'maps/custom/04_custom_labyrinth_city.txt'
+    '03_c': 'maps/custom/04_custom_labyrinth_city.txt',
+    '04_c': 'maps/custom/00_a_day_off.txt',
 }
 
 RESOLUTION: tuple[int, int] = (1920, 1080)
@@ -157,6 +157,10 @@ COLORS: dict[str, tuple[int, int, int]] = {
     "sand_dark": (170, 145, 90),
     "parchment": (195, 175, 120),
     "obsidian": (35, 30, 45),
+    "snow":   (235, 240, 245),
+    "ice":    (180, 215, 235),
+    "frost":  (200, 225, 240),
+    "powder": (210, 230, 250),
 
     # --- Highlight ---
     "highlight_hovered": (240, 240, 255),

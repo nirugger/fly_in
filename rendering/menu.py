@@ -236,7 +236,7 @@ class Menu:
     def _draw_map_custom(self) -> None:
 
         rect = draw_label(
-            self.screen, "RIVER DELTA", self.center, self.menu_font,
+            self.screen, "HIGHWAY JAM", self.center, self.menu_font,
             TEXT_COLOR if MAPS['01_c'] not in self.x_maps else INVALID_COLOR)
         if MAPS['01_c'] not in self.x_maps:
             self.buttons['01_c'] = rect
@@ -249,14 +249,14 @@ class Menu:
             self.buttons['02_c'] = rect
 
         rect = draw_label(
-            self.screen, "HIGHWAY JAM", self.center, self.menu_font,
+            self.screen, "LABYRINTH CITY", self.center, self.menu_font,
             TEXT_COLOR if MAPS['03_c'] not in self.x_maps else INVALID_COLOR,
             (0, self.y_off * 2))
         if MAPS['03_c'] not in self.x_maps:
             self.buttons['03_c'] = rect
 
         rect = draw_label(
-            self.screen, "LABYRINTH CITY", self.center, self.menu_font,
+            self.screen, "A DAY OFF", self.center, self.menu_font,
             TEXT_COLOR if MAPS['04_c'] not in self.x_maps else INVALID_COLOR,
             (0, self.y_off * 3))
         if MAPS['04_c'] not in self.x_maps:

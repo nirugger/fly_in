@@ -23,7 +23,7 @@ import os
 
 output_path: str = "output/"
 
-map_names: dict[str, str] = {
+map_registry: dict[str, str] = {
     'maps/easy/01_linear_path.txt': 'linear_path',
     'maps/easy/02_simple_fork.txt': 'simple_fork',
     'maps/easy/03_basic_capacity.txt': 'basic_capacity',
@@ -38,6 +38,7 @@ map_names: dict[str, str] = {
     'maps/custom/02_feedback_loop_puzzle.txt': 'feedback_loop',
     'maps/custom/03_custom_highway.txt': 'highway_jam',
     'maps/custom/04_custom_labyrinth_city.txt': 'labyrinth_city',
+    'maps/custom/00_a_day_off.txt': 'a_day_off'
 }
 
 
@@ -126,7 +127,7 @@ class FlyInSimulator:
         turn_map = self._build_turn_map(drones)
 
         try:
-            path = output_path + map_names[path_to_map] + '.txt'
+            path = output_path + map_registry[path_to_map] + '.txt'
             os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, 'w') as f:
                 for _, drone_zone in turn_map.items():

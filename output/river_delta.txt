@@ -1,0 +1,21 @@
+D1-split_north D2-split_south D3-split_center
+D1-north_a D2-south_a D3-split_center-center_a D4-split_north D5-split_south D6-split_center
+D1-north_b D2-south_b D3-center_a D4-north_a D5-south_a D6-split_center-center_a D7-split_north D8-split_south D9-split_center
+D1-north_c D2-south_c D3-center_a-center_b D4-north_b D5-south_b D6-center_a D7-north_a D8-south_a D9-split_center-center_a D10-split_north D11-split_south D12-split_center
+D1-north_d D2-south_d D3-center_b D4-north_c D5-south_c D6-center_a-center_b D7-north_b D8-south_b D9-center_a D10-north_a D11-south_a D12-split_center-center_a D13-split_north D14-split_south D15-split_center
+D1-gate_north D2-gate_south D3-center_b-center_c D4-north_d D5-south_d D6-center_b D7-north_c D8-south_c D9-center_a-center_b D10-north_b D11-south_b D12-center_a D13-north_a D14-south_a D15-split_center-center_a D16-split_north D17-split_south D18-split_center
+D1-goal D2-goal D3-center_c D4-gate_north D5-gate_south D6-center_b-center_c D7-north_d D8-south_d D9-center_b D10-north_c D11-south_c D12-center_a-center_b D13-north_b D14-south_b D15-center_a D16-north_a D17-south_a D18-split_center-center_a D19-split_north D20-split_south D21-split_center
+D3-center_d D4-goal D5-goal D6-center_c D7-gate_north D8-gate_south D9-center_b-center_c D10-north_d D11-south_d D12-center_b D13-north_c D14-south_c D15-center_a-center_b D16-north_b D17-south_b D18-center_a D19-north_a D20-south_a D21-split_center-center_a D22-split_north D23-split_south D24-split_center
+D3-gate_center D6-center_d D7-goal D8-goal D9-center_c D10-gate_north D11-gate_south D12-center_b-center_c D13-north_d D14-south_d D15-center_b D16-north_c D17-south_c D18-center_a-center_b D19-north_b D20-south_b D21-center_a D22-north_a D23-south_a D24-split_center-center_a D25-split_north D26-split_south D27-split_center
+D3-goal D6-gate_center D9-center_d D10-goal D11-goal D12-center_c D13-gate_north D14-gate_south D15-center_b-center_c D16-north_d D17-south_d D18-center_b D19-north_c D20-south_c D21-center_a-center_b D22-north_b D23-south_b D24-center_a D25-north_a D26-south_a D27-split_center-center_a D28-split_north D29-split_south D30-split_center
+D6-goal D9-gate_center D12-center_d D13-goal D14-goal D15-center_c D16-gate_north D17-gate_south D18-center_b-center_c D19-north_d D20-south_d D21-center_b D22-north_c D23-south_c D24-center_a-center_b D25-north_b D26-south_b D27-center_a D28-north_a D29-south_a D30-split_center-center_a D31-split_north D32-split_south D33-split_center
+D9-goal D12-gate_center D15-center_d D16-goal D17-goal D18-center_c D19-gate_north D20-gate_south D21-center_b-center_c D22-north_d D23-south_d D24-center_b D25-north_c D26-south_c D27-center_a-center_b D28-north_b D29-south_b D30-center_a D31-north_a D32-south_a D33-split_center-center_a D34-split_north D35-split_south
+D12-goal D15-gate_center D18-center_d D19-goal D20-goal D21-center_c D22-gate_north D23-gate_south D24-center_b-center_c D25-north_d D26-south_d D27-center_b D28-north_c D29-south_c D30-center_a-center_b D31-north_b D32-south_b D33-center_a D34-north_a D35-south_a D36-split_north D37-split_south
+D15-goal D18-gate_center D21-center_d D22-goal D23-goal D24-center_c D25-gate_north D26-gate_south D27-center_b-center_c D28-north_d D29-south_d D30-center_b D31-north_c D32-south_c D33-center_a-center_b D34-north_b D35-south_b D36-north_a D37-south_a D38-split_north D39-split_south
+D18-goal D21-gate_center D24-center_d D25-goal D26-goal D27-center_c D28-gate_north D29-gate_south D30-center_b-center_c D31-north_d D32-south_d D33-center_b D34-north_c D35-south_c D36-north_b D37-south_b D38-north_a D39-south_a D40-split_north
+D21-goal D24-gate_center D27-center_d D28-goal D29-goal D30-center_c D31-gate_north D32-gate_south D33-center_b-center_c D34-north_d D35-south_d D36-north_c D37-south_c D38-north_b D39-south_b D40-north_a
+D24-goal D27-gate_center D30-center_d D31-goal D32-goal D33-center_c D34-gate_north D35-gate_south D36-north_d D37-south_d D38-north_c D39-south_c D40-north_b
+D27-goal D30-gate_center D33-center_d D34-goal D35-goal D36-gate_north D37-gate_south D38-north_d D39-south_d D40-north_c
+D30-goal D33-gate_center D36-goal D37-goal D38-gate_north D39-gate_south D40-north_d
+D33-goal D38-goal D39-goal D40-gate_north
+D40-goal
