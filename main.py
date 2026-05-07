@@ -1,6 +1,7 @@
 """Main module of the Fly In Simulator."""
-import pygame
+
 from src.flyin import FlyInSimulator
+import pygame
 
 if __name__ == "__main__":
     pygame.init()

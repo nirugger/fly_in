@@ -5,19 +5,21 @@ loads map data, builds the graph, schedules drones, and renders
 simulation results.
 """
 
-from parser import Parser
+from parser import Parser, RED, RESET
+
 from src.zone import Zone
 from src.drone import Drone
 from src.graph import Graph
 from src.pathfinder import Pathfinder
 from src.scheduler import Scheduler
-from rendering.renderer import Renderer
-import pygame
+
 from rendering.menu import Menu, MenuState
+from rendering.renderer import Renderer
 from rendering.data import RESOLUTION
+
+import pygame
 import sys
 import os
-from parser import RED, RESET
 
 output_path: str = "output/"
 
@@ -58,10 +60,11 @@ class FlyInSimulator:
         The method displays the main menu, parses the selected map,
         builds the graph, schedules drones, and starts the renderer.
         """
+        racondom_color = False
         while True:
             if self.new_run is True:
                 menu = Menu(self.screen)
-            path_to_map = menu.run()
+            path_to_map = menu.run(racondom_color)
             parser = Parser(path_to_map)
             raw_data = parser.parse()
             self.graph = Graph.build_graph(raw_data)
@@ -78,8 +81,8 @@ class FlyInSimulator:
             scheduler.schedule_drones()
             self.write_output(path_to_map)
 
-            renderer = Renderer(self.screen, self.graph)
-            renderer.run()
+            renderer = Renderer(self.screen, self.graph, pathfinder.paths)
+            racondom_color = renderer.run()
 
     def _build_turn_map(
             self, drones: list[Drone]

@@ -1,7 +1,7 @@
 """Shared rendering constants and map selection metadata."""
 
-import os
 import random
+import os
 
 MAPS = {
     '01_e': 'maps/easy/01_linear_path.txt',
@@ -20,16 +20,24 @@ MAPS = {
     '04_c': 'maps/custom/04_custom_labyrinth_city.txt'
 }
 
-SPAN: float = 25.0
 RESOLUTION: tuple[int, int] = (1920, 1080)
+SCREEN_COLOR: tuple[int, int, int] = (5, 10, 15)
+
+ZONE_R: float = 20.0
+ZONE_R2: float = 15.0
+ZONE_W: int = 6
+CONN_W: int = 3
+DRONE_R: float = 5.0
+SPAN: float = 15.0
+
+TEXT_COLOR: tuple[int, int, int] = (242, 242, 242)
+INVALID_COLOR: tuple[int, int, int] = (110, 110, 120)
+CONN_COLOR: tuple[int, int, int] = (42, 42, 42)
+DRONE_COLOR: tuple[int, int, int] = (220, 110, 110)
 
 FONT_DIR: str = os.path.join(os.path.dirname(__file__), 'assets')
 FONT_REGULAR: str = os.path.join(FONT_DIR, 'JetBrainsMono-Regular.ttf')
 FONT_BOLD: str = os.path.join(FONT_DIR, 'JetBrainsMono-Bold.ttf')
-
-TEXT_COLOR: tuple[int, int, int] = (242, 242, 242)
-INVALID_COLOR: tuple[int, int, int] = (110, 110, 120)
-DRONE_COLOR: tuple[int, int, int] = (220, 110, 110)
 
 MIN_INT: int = -2147483648
 MAX_INT: int = 2147483647

@@ -85,6 +85,7 @@ class Path(TypedDict):
     path: list[Zone]
     cap: int
     cost: int
+    restricted: int
 
 
 @dataclass

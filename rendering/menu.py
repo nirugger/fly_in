@@ -1,12 +1,17 @@
 """User interface menu for selecting maps and starting the simulation."""
 
-import pygame
-from enum import Enum
-from rendering.draw import draw_line, draw_label
-from rendering.data import (MAPS, FONT_REGULAR, FONT_BOLD,
-                            COLORS, TEXT_COLOR, INVALID_COLOR)
 from parser import RED, RESET
+
+from rendering.draw import draw_label
+from rendering.utils import get_random_color
+from rendering.data import (
+    MAPS, COLORS, TEXT_COLOR, INVALID_COLOR, SCREEN_COLOR,
+    FONT_REGULAR, FONT_BOLD,)
+
+import pygame
 import sys
+
+from enum import Enum
 
 
 class MenuState(Enum):
@@ -23,12 +28,14 @@ class MenuState(Enum):
 
 class Menu:
     """Handle menu rendering and map selection input."""
-    def __init__(self, screen: pygame.Surface):
+    def __init__(
+            self,
+            screen: pygame.Surface
+            ) -> None:
         """Initialize a Menu object."""
         self.screen = screen
         self.center = (self.screen.get_width() // 2,
                        self.screen.get_height() // 2)
-        self.title = "FLY IN"
         self.state: MenuState = MenuState.MAIN
         self.buttons: dict[str, pygame.Rect] = {}
 
@@ -37,8 +44,9 @@ class Menu:
 
         self.title_font = pygame.font.Font(FONT_BOLD, 42)
         self.menu_font = pygame.font.Font(FONT_REGULAR, 20)
+        self.y_off = self.menu_font.get_height() + 3
 
-    def run(self) -> str:
+    def run(self, random_color: bool = False) -> str:
         """Display the menu and return the selected map path.
 
         The method loops until the user chooses a map or exits the app.
@@ -47,333 +55,216 @@ class Menu:
             str: path to the selected map file.
         """
         while True:
-            self.screen.fill((5, 10, 15))
+            self.screen.fill(SCREEN_COLOR)
             self.buttons.clear()
             self._draw_title()
-
-            if self.state == MenuState.INVALID_MAP:
-                self.x_maps.add(self.last_result)
-
-                if len(self.x_maps) == len(MAPS):
-                    print(f"\n{RED}[ERROR]:{RESET} "
-                          "all present maps have no possible solution.\n"
-                          "Please reconsider your priorities.\n")
-                    pygame.quit()
-                    sys.exit(1)
-
-                self._draw_error()
-                self._draw_main_menu()
-
-            elif self.state == MenuState.MAIN:
-                self._draw_main_menu()
-            elif self.state == MenuState.CATEGORIES:
-                self._draw_categories()
-            elif self.state == MenuState.MAP_EASY:
-                self._draw_map_easy()
-            elif self.state == MenuState.MAP_MEDIUM:
-                self._draw_map_medium()
-            elif self.state == MenuState.MAP_HARD:
-                self._draw_map_hard()
-            elif self.state == MenuState.MAP_CUSTOM:
-                self._draw_map_custom()
-            self._underline_hovered()
+            self._handle_menu_state()
+            self._underline_hovered(random_color)
 
             result = self._handle_events()
             if result:
                 self.last_result = result
                 return result
+
             pygame.display.flip()
 
-    def _underline_hovered(self) -> None:
+    def _handle_menu_state(self) -> None:
+        if self.state is MenuState.INVALID_MAP:
+            self.x_maps.add(self.last_result)
+
+            if len(self.x_maps) == len(MAPS):
+                print(f"\n{RED}[ERROR]:{RESET} "
+                      "all present maps have no possible solution!\n"
+                      "Please reconsider your priorities.\n")
+                pygame.quit()
+                sys.exit(1)
+
+            self._draw_error()
+            self._draw_main_menu()
+
+        elif self.state is MenuState.MAIN:
+            self._draw_main_menu()
+        elif self.state is MenuState.CATEGORIES:
+            self._draw_categories()
+        elif self.state is MenuState.MAP_EASY:
+            self._draw_map_easy()
+        elif self.state is MenuState.MAP_MEDIUM:
+            self._draw_map_medium()
+        elif self.state is MenuState.MAP_HARD:
+            self._draw_map_hard()
+        elif self.state is MenuState.MAP_CUSTOM:
+            self._draw_map_custom()
+
+    def _underline_hovered(
+            self,
+            random_color: bool = False,
+            ) -> None:
+        special_color = get_random_color() if random_color else TEXT_COLOR
         hovered = self._hovered_button()
         if hovered and hovered != "title":
             rect = self.buttons[hovered]
-            draw_line(
-                surface=self.screen,
-                color=TEXT_COLOR,
-                start=(rect.left, rect.bottom),
-                end=(rect.right, rect.bottom),
-                width=1
-            )
+            pygame.draw.line(self.screen, special_color,
+                             rect.bottomleft, rect.bottomright)
 
     def _draw_title(self) -> None:
-        self.buttons['title'] = draw_label(
-            self.screen,
-            self.title,
-            self.center,
-            self.title_font,
-            TEXT_COLOR,
-            (0, -self.menu_font.get_height() * 3)
-        )
+        height = self.menu_font.get_height()
+        self.buttons['title'] = draw_label(self.screen, "FLY IN", self.center,
+                                           self.title_font, TEXT_COLOR,
+                                           offset=(0, -(height * 3)))
 
     def _draw_error(self) -> None:
-        draw_label(
-            self.screen,
-            "[ERROR]: no path was found for this map",
-            self.center,
-            self.menu_font,
-            COLORS['red'],
-            (0, -self.menu_font.get_height() - 3)
-        )
+        draw_label(self.screen, "[ERROR]: no path was found for this map",
+                   self.center, self.menu_font, COLORS['red'],
+                   offset=(0, -(self.y_off)))
 
     def _draw_main_menu(self) -> None:
 
-        self.buttons['start'] = draw_label(
-            self.screen,
-            "START",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR
-        )
+        self.buttons['start'] = draw_label(self.screen, "START", self.center,
+                                           self.menu_font, TEXT_COLOR)
 
-        self.buttons['exit'] = draw_label(
-            self.screen,
-            "EXIT",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR,
-            (0, self.menu_font.get_height() + 3)
-        )
+        self.buttons['exit'] = draw_label(self.screen, "EXIT", self.center,
+                                          self.menu_font, TEXT_COLOR,
+                                          offset=(0, self.y_off))
 
     def _draw_categories(self) -> None:
 
-        self.buttons['easy'] = draw_label(
-            self.screen,
-            "EASY",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR
-        )
+        self.buttons['easy'] = draw_label(self.screen, "EASY", self.center,
+                                          self.menu_font, TEXT_COLOR)
 
-        self.buttons['medium'] = draw_label(
-            self.screen,
-            "MEDIUM",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR,
-            (0, self.menu_font.get_height() + 3)
-        )
+        self.buttons['medium'] = draw_label(self.screen, "MEDIUM", self.center,
+                                            self.menu_font, TEXT_COLOR,
+                                            (0, self.y_off))
 
-        self.buttons['hard'] = draw_label(
-            self.screen,
-            "HARD",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 2)
-        )
+        self.buttons['hard'] = draw_label(self.screen, "HARD", self.center,
+                                          self.menu_font, TEXT_COLOR,
+                                          (0, (self.y_off) * 2))
 
-        self.buttons['custom'] = draw_label(
-            self.screen,
-            "CUSTOM",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 3)
-        )
+        self.buttons['custom'] = draw_label(self.screen, "CUSTOM", self.center,
+                                            self.menu_font, TEXT_COLOR,
+                                            offset=(0, self.y_off * 3))
 
-        self.buttons['back_to_menu'] = draw_label(
-            self.screen,
-            "BACK",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 6)
-        )
+        self.buttons['back_to_menu'] = draw_label(self.screen, "BACK",
+                                                  self.center, self.menu_font,
+                                                  TEXT_COLOR,
+                                                  (0, self.y_off * 6))
 
     def _draw_map_easy(self) -> None:
 
         rect = draw_label(
-            self.screen,
-            "LINEAR PATH",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR if MAPS['01_e'] not in self.x_maps else INVALID_COLOR,
-        )
+            self.screen, "LINEAR PATH", self.center, self.menu_font,
+            TEXT_COLOR if MAPS['01_e'] not in self.x_maps else INVALID_COLOR)
         if MAPS['01_e'] not in self.x_maps:
             self.buttons['01_e'] = rect
 
         rect = draw_label(
-            self.screen,
-            "SIMPLE FORK",
-            self.center,
-            self.menu_font,
+            self.screen, "SIMPLE FORK", self.center, self.menu_font,
             TEXT_COLOR if MAPS['02_e'] not in self.x_maps else INVALID_COLOR,
-            (0, self.menu_font.get_height() + 3)
-        )
+            (0, self.y_off))
         if MAPS['02_e'] not in self.x_maps:
             self.buttons['02_e'] = rect
 
         rect = draw_label(
-            self.screen,
-            "BASIC CAPACITY",
-            self.center,
-            self.menu_font,
+            self.screen, "BASIC CAPACITY", self.center, self.menu_font,
             TEXT_COLOR if MAPS['03_e'] not in self.x_maps else INVALID_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 2)
-        )
+            (0, self.y_off * 2))
         if MAPS['03_e'] not in self.x_maps:
             self.buttons['03_e'] = rect
 
         self.buttons['back_to_cat'] = draw_label(
-            self.screen,
-            "BACK",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 6)
-        )
+            self.screen, "BACK", self.center, self.menu_font,
+            TEXT_COLOR, (0, self.y_off * 6))
 
     def _draw_map_medium(self) -> None:
 
         rect = draw_label(
-            self.screen,
-            "DEAD END TRAP",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR if MAPS['01_m'] not in self.x_maps else INVALID_COLOR,
-        )
+            self.screen, "DEAD END TRAP", self.center, self.menu_font,
+            TEXT_COLOR if MAPS['01_m'] not in self.x_maps else INVALID_COLOR)
         if MAPS['01_m'] not in self.x_maps:
             self.buttons['01_m'] = rect
 
         rect = draw_label(
-            self.screen,
-            "CIRCULAR LOOP",
-            self.center,
-            self.menu_font,
+            self.screen, "CIRCULAR LOOP", self.center, self.menu_font,
             TEXT_COLOR if MAPS['02_m'] not in self.x_maps else INVALID_COLOR,
-            (0, self.menu_font.get_height() + 3)
-        )
+            (0, self.y_off))
         if MAPS['02_m'] not in self.x_maps:
             self.buttons['02_m'] = rect
 
         rect = draw_label(
-            self.screen,
-            "PRIORITY PUZZLE",
-            self.center,
-            self.menu_font,
+            self.screen, "PRIORITY PUZZLE", self.center, self.menu_font,
             TEXT_COLOR if MAPS['03_m'] not in self.x_maps else INVALID_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 2)
-        )
+            (0, self.y_off * 2))
         if MAPS['03_m'] not in self.x_maps:
             self.buttons['03_m'] = rect
 
         self.buttons['back_to_cat'] = draw_label(
-            self.screen,
-            "BACK",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 6)
-        )
+            self.screen, "BACK", self.center, self.menu_font,
+            TEXT_COLOR, (0, self.y_off * 6))
 
     def _draw_map_hard(self) -> None:
 
         rect = draw_label(
-            self.screen,
-            "MAZE NIGHTMARE",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR if MAPS['01_h'] not in self.x_maps else INVALID_COLOR,
-        )
+            self.screen, "MAZE NIGHTMARE", self.center, self.menu_font,
+            TEXT_COLOR if MAPS['01_h'] not in self.x_maps else INVALID_COLOR)
         if MAPS['01_h'] not in self.x_maps:
             self.buttons['01_h'] = rect
 
         rect = draw_label(
-            self.screen,
-            "CAPACITY HELL",
-            self.center,
-            self.menu_font,
+            self.screen, "CAPACITY HELL", self.center, self.menu_font,
             TEXT_COLOR if MAPS['02_h'] not in self.x_maps else INVALID_COLOR,
-            (0, self.menu_font.get_height() + 3)
-        )
+            (0, self.y_off))
         if MAPS['02_h'] not in self.x_maps:
             self.buttons['02_h'] = rect
 
         rect = draw_label(
-            self.screen,
-            "ULTIMATE CHALLENGE",
-            self.center,
-            self.menu_font,
+            self.screen, "ULTIMATE CHALLENGE", self.center, self.menu_font,
             TEXT_COLOR if MAPS['03_h'] not in self.x_maps else INVALID_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 2)
-        )
+            (0, self.y_off * 2))
         if MAPS['03_h'] not in self.x_maps:
             self.buttons['03_h'] = rect
 
         rect = draw_label(
-            self.screen,
-            "THE IMPOSSIBLE DREAM",
-            self.center,
-            self.menu_font,
+            self.screen, "THE IMPOSSIBLE DREAM", self.center, self.menu_font,
             TEXT_COLOR if MAPS['04_h'] not in self.x_maps else INVALID_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 3)
-        )
+            (0, self.y_off * 3))
         if MAPS['04_h'] not in self.x_maps:
             self.buttons['04_h'] = rect
 
         self.buttons['back_to_cat'] = draw_label(
-            self.screen,
-            "BACK",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 6)
-        )
+            self.screen, "BACK", self.center, self.menu_font,
+            TEXT_COLOR, (0, self.y_off * 6))
 
     def _draw_map_custom(self) -> None:
 
         rect = draw_label(
-            self.screen,
-            "RIVER DELTA",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR if MAPS['01_c'] not in self.x_maps else INVALID_COLOR
-        )
+            self.screen, "RIVER DELTA", self.center, self.menu_font,
+            TEXT_COLOR if MAPS['01_c'] not in self.x_maps else INVALID_COLOR)
         if MAPS['01_c'] not in self.x_maps:
             self.buttons['01_c'] = rect
 
         rect = draw_label(
-            self.screen,
-            "FEEDBACK LOOP",
-            self.center,
-            self.menu_font,
+            self.screen, "FEEDBACK LOOP", self.center, self.menu_font,
             TEXT_COLOR if MAPS['02_c'] not in self.x_maps else INVALID_COLOR,
-            (0, self.menu_font.get_height() + 3)
-        )
+            (0, self.y_off))
         if MAPS['02_c'] not in self.x_maps:
             self.buttons['02_c'] = rect
 
         rect = draw_label(
-            self.screen,
-            "HIGHWAY JAM",
-            self.center,
-            self.menu_font,
+            self.screen, "HIGHWAY JAM", self.center, self.menu_font,
             TEXT_COLOR if MAPS['03_c'] not in self.x_maps else INVALID_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 2)
-        )
+            (0, self.y_off * 2))
         if MAPS['03_c'] not in self.x_maps:
             self.buttons['03_c'] = rect
 
         rect = draw_label(
-            self.screen,
-            "LABYRINTH CITY",
-            self.center,
-            self.menu_font,
+            self.screen, "LABYRINTH CITY", self.center, self.menu_font,
             TEXT_COLOR if MAPS['04_c'] not in self.x_maps else INVALID_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 3)
-        )
+            (0, self.y_off * 3))
         if MAPS['04_c'] not in self.x_maps:
             self.buttons['04_c'] = rect
 
         self.buttons['back_to_cat'] = draw_label(
-            self.screen,
-            "BACK",
-            self.center,
-            self.menu_font,
-            TEXT_COLOR,
-            (0, (self.menu_font.get_height() + 3) * 6)
-        )
+            self.screen, "BACK", self.center, self.menu_font,
+            TEXT_COLOR, (0, self.y_off * 6))
 
     def _hovered_button(self) -> str | None:
         """Return the name of the button currently under the mouse.

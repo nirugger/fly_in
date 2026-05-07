@@ -86,6 +86,9 @@ class Graph:
             if zone.zone_type is not ZoneType.BLOCKED
         }
 
+        for zone, conns in finder_grid.items():
+            zone.connections.extend(conns)
+
         drones: list[Drone] = [
             Drone(drone_id=i)
             for i in range(1, raw_data["nb_drones"] + 1)

@@ -103,42 +103,39 @@ class Pathfinder:
                 max_capacity = connection.max_link_capacity
         return max_capacity
 
-    def build_next_shortest_path(
-            self
-            ) -> None:
+    def build_next_shortest_path(self) -> None:
         """Construct the next shortest path using predecessor links.
 
         The method also inserts intermediate restricted connection zones
         when required.
         """
-        current: Zone = self.graph.end
+        current: Zone | None = self.graph.end
         path: list[Zone] = []
 
-        if current.prev:
-            while current:
-                path.append(current)
-                if (current.zone_type is ZoneType.RESTRICTED
-                        and not current.is_start):
-                    connection_zone = next(
-                        connection.zone_c
-                        for connection in self.graph.finder_grid[current]
-                        if connection.get_other(current) is current.prev
-                    )
-                    if connection_zone:
-                        path.append(connection_zone)
-                current = current.prev
+        while current:
+            path.append(current)
+            if current.zone_type is ZoneType.RESTRICTED and current.prev:
+                zone_c = next(
+                    connection.zone_c
+                    for connection in self.graph.finder_grid[current]
+                    if connection.get_other(current) is current.prev
+                )
+                if zone_c:
+                    path.append(zone_c)
+            current = current.prev
 
         self.paths.append(Path(
             path=path[::-1],
             cap=self.get_path_capacity(path),
-            cost=len(path) - 1
+            cost=len(path) - 1,
+            restricted=self._has_restricted(path[::-1])
         ))
 
     def find_next_shortest_path(self) -> bool:
         """Find the next shortest path from start to end.
 
         Returns:
-            bool: True when a path was found, False otherwise.
+            bool: True when a path is found, False otherwise.
         """
         for zone in self.graph.finder_grid:
             zone.prev = None
@@ -169,3 +166,20 @@ class Pathfinder:
 
         self.build_next_shortest_path()
         return True
+
+    def _has_restricted(
+            self,
+            path: list[Zone]
+            ) -> int:
+        """Find if the path contains a restricted zone.
+
+        Args:
+            path (list[Zone]): source path to query.
+
+        Returns:
+            int: 1 if the path has a restricted zone, 0 otherwise.
+        """
+        for z in path:
+            if z.zone_type is ZoneType.RESTRICTED:
+                return 1
+        return 0
