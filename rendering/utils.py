@@ -64,15 +64,15 @@ def average_turn_per_drone(
     if total:
         return sum(
             max(turn for turn, _ in drone.path)
-            - min(t for t, z in drone.path if not z.is_start)
-            + 1
+            # - min(t for t, z in drone.path if not z.is_start)
+            # + 1
             for drone in drone_list
         ) / len(drone_list)
 
     return sum(
         max(turn for turn, _ in drone.path if turn <= current_t)
-        - min(t for t, z in drone.path if not z.is_start)
-        + 1
+        # - min(t for t, z in drone.path if not z.is_start)
+        # + 1
         for drone in drone_list
     ) / len(drone_list)
 

@@ -66,6 +66,24 @@ def draw_connection(
     return (n_start, n_end)
 
 
+def draw_hovered_connection(
+        surface: pygame.Surface,
+        start: tuple[int, int],
+        end: tuple[int, int],
+        width: int = CONN_W,
+        color: tuple[int, int, int] = TEXT_COLOR
+        ) -> None:
+
+    pygame.draw.circle(surface, color,
+                       start, ZONE_R + 2, width)
+
+    pygame.draw.circle(surface, color,
+                       end, ZONE_R + 2, width)
+
+    draw_connection(surface, start, end,
+                    width, color)
+
+
 def draw_line(
         surface: pygame.Surface,
         color: Color,

@@ -11,12 +11,15 @@ from src.graph import Graph
 from src.types import Path
 
 from rendering.utils import (
-    average_turn_per_drone, compute_percentage, get_zone_color,
+    average_turn_per_drone, get_zone_color,
     get_random_color, get_neighbors, get_occupancy_at_turn, total_turn_cost,
     build_connection_path)
 
+from rendering.utils import compute_percentage as cp
+
 from rendering.draw import (
-    draw_connection, draw_tooltip, draw_label, draw_button, draw_finish)
+    draw_connection, draw_tooltip, draw_label, draw_button, draw_finish,
+    draw_hovered_connection)
 
 from rendering.data import (
     DRONE_R, ZONE_R, ZONE_R2, ZONE_W, CONN_W, SPAN,
@@ -180,7 +183,7 @@ class Renderer:
         self.screen.fill(SCREEN_COLOR)
         self._draw_connections()
         self._draw_zones()
-        self._draw_hovered()
+        self._draw_hovered_frame()
         self._draw_drones()
         self._draw_tooltips()
         if self.current_turn >= self.max_turn:
@@ -205,94 +208,121 @@ class Renderer:
             pygame.draw.circle(self.screen, SCREEN_COLOR, position, ZONE_R2)
             pygame.draw.circle(self.screen, color, position, ZONE_R, ZONE_W)
 
-    def _draw_hovered(self) -> None:
+    def _draw_hovered_frame(self) -> None:
 
         hovered_zs: list[Zone] = self._hovered_zone(ZONE_R)
         hovered_ds: list[Drone] = self._hovered_drones(DRONE_R)
         hovered_cs: list[Connection] = self._hovered_connection(10.0)
         special_color = get_random_color() if self.random_color else TEXT_COLOR
 
-        if (len(hovered_ds) > 0):
-            for hd in hovered_ds:
-                pos = self._get_drone_position(hd)
-                if pos is None:
-                    continue
-                pygame.draw.circle(self.screen, special_color, pos,
-                                   DRONE_R + 1, 1)
-            return self._draw_path(hovered_cs, hovered_zs, special_color)
-
         if self.path_view:
-            return self._draw_path(hovered_cs, hovered_zs, special_color)
+            return self._draw_hovered_paths(
+                hovered_cs, hovered_zs, hovered_ds, special_color
+            )
 
         if (len(hovered_cs) > 0
                 and len(hovered_zs) == 0
                 and len(hovered_ds) == 0
                 and self.current_turn < self.max_turn):
-
-            for hc in hovered_cs:
-                pos = self.c_positions.get(hc)
-                if pos is None:
-                    continue
-
-                start = self.z_positions.get(hc.zone_a)
-                end = self.z_positions.get(hc.zone_b)
-                if start is None or end is None:
-                    continue
-
-                pygame.draw.circle(self.screen, special_color,
-                                   start, ZONE_R + 2, CONN_W)
-                pygame.draw.circle(self.screen, special_color,
-                                   end, ZONE_R + 2, CONN_W)
-
-                draw_connection(self.screen, start, end,
-                                CONN_W, special_color)
+            self._draw_hovered_connections(hovered_cs, special_color)
 
         if (len(hovered_zs) > 0
                 and len(hovered_ds) == 0
                 and self.current_turn < self.max_turn):
+            self._draw_hovered_zones(hovered_zs, special_color)
 
-            for hz in hovered_zs:
-                start = self.z_positions.get(hz)
-                if start is None:
+        if (len(hovered_ds) > 0
+                and self.current_turn < self.max_turn):
+            self._draw_hovered_drones(hovered_ds, special_color)
+
+    def _draw_hovered_connections(
+            self,
+            lst: list[Connection],
+            color: tuple[int, int, int]
+            ) -> None:
+        for hc in lst:
+            pos = self.c_positions.get(hc)
+            if pos is None:
+                continue
+
+            start = self.z_positions.get(hc.zone_a)
+            end = self.z_positions.get(hc.zone_b)
+            if start is None or end is None:
+                continue
+
+            draw_hovered_connection(self.screen, start, end,
+                                    CONN_W, color)
+
+    def _draw_hovered_drones(
+            self,
+            lst: list[Drone],
+            color: tuple[int, int, int]
+            ) -> None:
+
+        for drone in lst:
+            pos = self._get_drone_position(drone)
+            if pos is None:
+                continue
+            pygame.draw.circle(self.screen, color, pos,
+                               DRONE_R + 1, 1)
+
+    def _draw_hovered_zones(
+            self,
+            lst: list[Zone],
+            color: tuple[int, int, int]
+            ) -> None:
+        for zone in lst:
+            start = self.z_positions.get(zone)
+            if start is None:
+                continue
+
+            neighbors = get_neighbors(zone,
+                                      self.graph.render_grid.connections)
+            for z in neighbors:
+                end = self.z_positions.get(z)
+                if end is None:
                     continue
 
-                neighbors = get_neighbors(hz,
-                                          self.graph.render_grid.connections)
-                for z in neighbors:
-                    end = self.z_positions.get(z)
-                    if end is None:
-                        continue
+                draw_connection(self.screen, start, end,
+                                CONN_W, color)
 
-                    draw_connection(self.screen, start, end,
-                                    CONN_W, special_color)
+                z_color = color
+                # from rendering.data import COLORS
+                # match z.zone_type:
+                #     case ZoneType.NORMAL:
+                #         z_color = COLORS['highlight_normal']
+                #     case ZoneType.BLOCKED:
+                #         z_color = COLORS['highlight_blocked']
+                #     case ZoneType.RESTRICTED:
+                #         z_color = COLORS['highlight_restricted']
+                #     case ZoneType.PRIORITY:
+                #         z_color = COLORS['highlight_priority']
 
-                    z_color = special_color
-                    # from rendering.data import COLORS
-                    # match z.zone_type:
-                    #     case ZoneType.NORMAL:
-                    #         z_color = COLORS['highlight_normal']
-                    #     case ZoneType.BLOCKED:
-                    #         z_color = COLORS['highlight_blocked']
-                    #     case ZoneType.RESTRICTED:
-                    #         z_color = COLORS['highlight_restricted']
-                    #     case ZoneType.PRIORITY:
-                    #         z_color = COLORS['highlight_priority']
+                pygame.draw.circle(self.screen, z_color,
+                                   end, ZONE_R + 2, CONN_W)
 
-                    pygame.draw.circle(self.screen, z_color,
-                                       end, ZONE_R + 2, CONN_W)
+            pygame.draw.circle(self.screen, color,
+                               start, ZONE_R + 2, CONN_W)
 
-                pygame.draw.circle(self.screen, special_color,
-                                   start, ZONE_R + 2, CONN_W)
-
-    def _draw_path(
+    def _draw_hovered_paths(
             self,
             hovered_cs: list[Connection],
             hovered_zs: list[Zone],
+            hovered_ds: list[Drone],
             special_color: tuple[int, int, int]
             ) -> None:
 
         path = {}
-        if (len(hovered_cs) > 0
+        if (len(hovered_ds) > 0
+                and self.current_turn < self.max_turn):
+            for hd in hovered_ds:
+                pos = self._get_drone_position(hd)
+                if pos is None:
+                    continue
+
+                # path = {k: v for k, v in self.paths.items if k is hd.path }
+
+        elif (len(hovered_cs) > 0
                 and len(hovered_zs) == 0
                 and self.current_turn < self.max_turn):
 
@@ -311,12 +341,8 @@ class Renderer:
                         end = self.z_positions.get(c.zone_b)
                         if start is None or end is None:
                             continue
-                        pygame.draw.circle(self.screen, special_color,
-                                           start, ZONE_R + 2, CONN_W)
-                        pygame.draw.circle(self.screen, special_color,
-                                           end, ZONE_R + 2, CONN_W)
-                        draw_connection(self.screen, start, end,
-                                        CONN_W, special_color)
+                        draw_hovered_connection(self.screen, start, end,
+                                                CONN_W, special_color)
 
         elif (len(hovered_zs) > 0
                 and self.current_turn < self.max_turn):
@@ -336,12 +362,8 @@ class Renderer:
                         end = self.z_positions.get(c.zone_b)
                         if start is None or end is None:
                             continue
-                        pygame.draw.circle(self.screen, special_color,
-                                           start, ZONE_R + 2, CONN_W)
-                        pygame.draw.circle(self.screen, special_color,
-                                           end, ZONE_R + 2, CONN_W)
-                        draw_connection(self.screen, start, end,
-                                        CONN_W, special_color)
+                        draw_hovered_connection(self.screen, start, end,
+                                                CONN_W, special_color)
 
     def _draw_drones(self) -> None:
         for drone in self.drones:
@@ -360,71 +382,121 @@ class Renderer:
     def _draw_tooltips(self) -> None:
 
         hovered_cs: list[Connection] = self._hovered_connection(10.0)
+        hovered_ds: list[Drone] = self._hovered_drones(DRONE_R)
         hovered_zs: list[Zone] = self._hovered_zone(ZONE_R)
         special_color = get_random_color() if self.random_color else TEXT_COLOR
 
-        if self.path_view is True:
+        if self.path_view:
             return self._draw_pathtips(hovered_cs, hovered_zs, special_color)
 
         if (len(hovered_cs) > 0
                 and len(hovered_zs) == 0
+                and len(hovered_ds) == 0
                 and self.current_turn < self.max_turn):
-            offset: int = 0
+            self._draw_connection_tooltip(hovered_cs, special_color)
 
-            for hc in hovered_cs:
-                c_lines = [
-                    f"NAME : {hc.name}",
-                    f"ROOM : {hc.max_link_capacity}",
-                ]
+        if (len(hovered_zs) > 0
+                and len(hovered_ds) == 0
+                and self.current_turn < self.max_turn):
+            self._draw_zone_tooltip(hovered_zs, special_color)
 
-                draw_tooltip(self.screen, special_color,
-                             self.tooltip_font, c_lines,
-                             pos=(30, 30 + offset))
-                offset += self.tooltip_font.get_linesize() * len(c_lines) + 30
+        if (len(hovered_ds) > 0
+                and self.current_turn < self.max_turn):
+            self._draw_drone_tooltip(hovered_ds, special_color)
 
-        if len(hovered_zs) > 0 and self.current_turn < self.max_turn:
-            offset: int = 0
-            for hz in hovered_zs:
+    def _draw_connection_tooltip(
+            self,
+            lst: list[Connection],
+            color: tuple[int, int, int]
+            ) -> None:
 
-                start = self.z_positions.get(hz)
-                if start is None:
+        offset: int = 0
+        for connection in lst:
+            c_lines = [
+                f"NAME : {connection.name}",
+                f"ROOM : {connection.max_link_capacity}",
+            ]
+
+            draw_tooltip(self.screen, color,
+                         self.tooltip_font, c_lines,
+                         pos=(30, 30 + offset))
+            offset += self.tooltip_font.get_linesize() * len(c_lines) + 30
+
+    def _draw_zone_tooltip(
+            self,
+            lst: list[Zone],
+            color: tuple[int, int, int]
+            ) -> None:
+
+        offset: int = 0
+        for zone in lst:
+
+            start = self.z_positions.get(zone)
+            if start is None:
+                continue
+
+            live = ""
+            if self.paused and self.current_turn.is_integer():
+                counter = 0
+                for d in self.drones:
+                    if d.position_at_turn(int(self.current_turn)) is zone:
+                        counter += 1
+                live = f"{counter} / "
+
+            s = "s" if zone.max_drones > 1 else ""
+            z_lines: list[str] = [
+                f"NAME  : {zone.name}",
+                f"TYPE  : {zone.zone_type.value}",
+                f"ROOM  : {live}{zone.max_drones} drone{s}",
+                f"COLOR : {zone.color}"
+            ]
+
+            neighbors = get_neighbors(zone,
+                                      self.graph.render_grid.connections)
+            if len(neighbors) > 0:
+                z_lines.extend(["", "NEIGHBORS:"])
+
+            for z in neighbors:
+                end = self.z_positions.get(z)
+                if end is None:
                     continue
 
-                live = ""
-                if self.paused and self.current_turn.is_integer():
-                    counter = 0
-                    for d in self.drones:
-                        if d.position_at_turn(int(self.current_turn)) is hz:
-                            counter += 1
-                    live = f"{counter} / "
+                cost = (z.movement_cost()
+                        if z.zone_type is not ZoneType.BLOCKED
+                        else 'X')
+                z_lines.append(f"cost {cost} → {z.name}")
 
-                s = "s" if hz.max_drones > 1 else ""
-                z_lines: list[str] = [
-                    f"NAME  : {hz.name}",
-                    f"TYPE  : {hz.zone_type.value}",
-                    f"ROOM  : {live}{hz.max_drones} drone{s}",
-                    f"COLOR : {hz.color}"
-                ]
+            draw_tooltip(self.screen, color,
+                         self.tooltip_font, z_lines,
+                         pos=(30, 30 + offset))
+            offset += self.tooltip_font.get_linesize() * len(z_lines) + 30
 
-                neighbors = get_neighbors(hz,
-                                          self.graph.render_grid.connections)
-                if len(neighbors) > 0:
-                    z_lines.extend(["", "NEIGHBORS:"])
+    def _draw_drone_tooltip(
+            self,
+            lst: list[Drone],
+            color: tuple[int, int, int]
+            ) -> None:
 
-                for z in neighbors:
-                    end = self.z_positions.get(z)
-                    if end is None:
-                        continue
+        offset: int = 0
 
-                    cost = (z.movement_cost()
-                            if z.zone_type is not ZoneType.BLOCKED
-                            else 'X')
-                    z_lines.append(f"cost {cost} → {z.name}")
+        for drone in lst:
+            being = ""
+            going = ""
+            for _, z in drone.path:
+                if z is self._position_this_turn(drone):
+                    being = z.name
+                if z is self._position_next_turn(drone):
+                    going = z.name
+            d_lines = [
+                f"DRONE ID : {drone.drone_id}",
+                f"BEING IN : {being}",
+                f"GOING TO : {going if going != being else 'wait'}"
+            ]
 
-                draw_tooltip(self.screen, special_color,
-                             self.tooltip_font, z_lines,
-                             pos=(30, 30 + offset))
-                offset += self.tooltip_font.get_linesize() * len(z_lines) + 30
+            draw_tooltip(self.screen, color,
+                         self.tooltip_font, d_lines,
+                         pos=(30, 30 + offset))
+            offset += self.tooltip_font.get_linesize() * len(d_lines) + 30
 
     def _draw_pathtips(
             self,
@@ -510,8 +582,8 @@ class Renderer:
                 lines = [
                     f"CURRENT TURN : {int(self.current_turn)}",
                     f"MAXIMUM TURN : {self.max_turn}",
-                    f"COMPLETION % : {compute_percentage(self.current_turn,
-                                                         self.max_turn, 2)}",
+                    "COMPLETION % : "
+                    f"{cp(self.current_turn, self.max_turn, 2)}",
                     "",
                     "DRONES WAITING  : "
                     f"{len(self.drones_action_map['waiting'])}",
