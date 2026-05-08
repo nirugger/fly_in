@@ -181,12 +181,33 @@ class Parser:
 
     def _read_file(self) -> None:
         """Read from configuration file and store data."""
-        with open(self.path, 'r') as f:
-            self.lines = [
-                (i + 1, line.strip())
-                for i, line in enumerate(f.read().split('\n'))
-                if line.strip() and not line.strip().startswith('#')
-            ]
+        try:
+            with open(self.path, 'r') as f:
+                self.lines = [
+                    (i + 1, line.strip())
+                    for i, line in enumerate(f.read().split('\n'))
+                    if line.strip() and not line.strip().startswith('#')
+                ]
+        
+        except KeyError:
+            print(f"{RED}[ERROR]:{RESET} "
+                  f"map not found in registry")
+
+        except FileNotFoundError:
+            print(f"{RED}[ERROR]:{RESET} "
+                  f"directory for {self.path} doesn't exist")
+            sys.exit(1)
+
+        except PermissionError:
+            print(f"{RED}[ERROR]:{RESET} "
+                  f"file {self.path} doesn't have permissions")
+            sys.exit(1)
+
+        except OSError as e:
+            print(f"{RED}[ERROR]:{RESET} "
+                  f"couldn't write to {self.path}: {e}")
+            sys.exit(1)
+
 
     def _parse_lines(self) -> None:
         """Parse all lines extracted from the configuration file.

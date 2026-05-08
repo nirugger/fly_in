@@ -48,7 +48,6 @@ class Renderer:
         self.paths: dict[tuple[Zone], list[Connection]] = {
             tuple(p['path']): build_connection_path(p['path']) for p in paths
         }
-        # breakpoint()
 
         self.speed: float = 0.5
         self.paused: bool = True
@@ -208,15 +207,26 @@ class Renderer:
 
     def _draw_hovered(self) -> None:
 
-        hovered_cs: list[Connection] = self._hovered_connection(10.0)
         hovered_zs: list[Zone] = self._hovered_zone(ZONE_R)
+        hovered_ds: list[Drone] = self._hovered_drones(DRONE_R)
+        hovered_cs: list[Connection] = self._hovered_connection(10.0)
         special_color = get_random_color() if self.random_color else TEXT_COLOR
+
+        if (len(hovered_ds) > 0):
+            for hd in hovered_ds:
+                pos = self._get_drone_position(hd)
+                if pos is None:
+                    continue
+                pygame.draw.circle(self.screen, special_color, pos,
+                                   DRONE_R + 1, 1)
+            return self._draw_path(hovered_cs, hovered_zs, special_color)
 
         if self.path_view:
             return self._draw_path(hovered_cs, hovered_zs, special_color)
 
         if (len(hovered_cs) > 0
                 and len(hovered_zs) == 0
+                and len(hovered_ds) == 0
                 and self.current_turn < self.max_turn):
 
             for hc in hovered_cs:
@@ -238,6 +248,7 @@ class Renderer:
                                 CONN_W, special_color)
 
         if (len(hovered_zs) > 0
+                and len(hovered_ds) == 0
                 and self.current_turn < self.max_turn):
 
             for hz in hovered_zs:
@@ -545,6 +556,26 @@ class Renderer:
             if math.sqrt(rx*rx + ry*ry) < zone_radius:
                 z_lst.append(zone)
         return z_lst
+
+    def _hovered_drones(
+            self,
+            drone_radius: float,
+            ) -> list[Drone]:
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        d_list: list[Drone] = []
+        for drone in self.drones:
+            d_pos = self._get_drone_position(drone)
+            if d_pos is None:
+                continue
+
+        # for zone, pos in self.z_positions.items():
+        #     if zone.zone_type is ZoneType.CONNECTION:
+        #         continue
+            rx = mouse_x - d_pos[0]
+            ry = mouse_y - d_pos[1]
+            if math.sqrt(rx*rx + ry*ry) < drone_radius:
+                d_list.append(drone)
+        return d_list
 
     def _hovered_connection(
             self,

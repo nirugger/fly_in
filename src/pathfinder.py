@@ -3,8 +3,6 @@
 from src.graph import Graph
 from src.zone import Zone, ZoneType
 from src.types import Path
-# import pygame
-# import sys
 
 
 class Pathfinder:
@@ -28,25 +26,8 @@ class Pathfinder:
 
         Paths are found iteratively using the current residual capacities.
         """
-
         while self.find_next_shortest_path():
-            last = self.paths[-1]
-            print(f"[DEBUG] Path trovata: cap={last['cap']} "
-                f"zones={[z.name for z in last['path']]}")
-            for z in last['path']:
-                print(f"  zone={z.name} residual={z.residual} "
-                    f"max_drones={z.max_drones}")
-            for i in range(len(last['path']) - 1):
-                connection = self.graph.get_connection_from_zones(last['path'][i], last['path'][i + 1])
-                if connection:
-                    print(f"  conn={connection.name} residual={connection.residual} "
-                        f"max_link_capacity={connection.max_link_capacity}")
-            self.update_max_capacity(last)
-            print(f"[DEBUG] Dopo update:")
-            for z in last['path']:
-                print(f"  zone={z.name} residual={z.residual}")
-        # while self.find_next_shortest_path():
-        #     self.update_max_capacity(self.paths[-1])
+            self.update_max_capacity(self.paths[-1])
 
     def insert_sorted(
             self,
@@ -118,10 +99,6 @@ class Pathfinder:
                 max_capacity = path[i].residual
             if connection and connection.residual < max_capacity:
                 max_capacity = connection.residual
-            # if path[i].max_drones < max_capacity:
-            #     # max_capacity = path[i].max_drones
-            # if connection and connection.max_link_capacity < max_capacity:
-            #     max_capacity = connection.max_link_capacity
         return max_capacity
 
     def build_next_shortest_path(self) -> None:
