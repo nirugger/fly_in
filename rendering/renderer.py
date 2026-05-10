@@ -10,8 +10,8 @@ from src.drone import Drone
 from src.graph import Graph
 from src.types import Path
 
-from rendering.utils import (average_turn_per_drone, total_turn_cost)
-from rendering.data import (SCREEN_COLOR, FONT_REGULAR, FONT_BOLD)
+from rendering.data import SCREEN_COLOR, FONT_REGULAR, FONT_BOLD
+from rendering.utils import average_turn_per_drone, total_turn_cost
 
 import rendering.draw_rend as draw
 import rendering.positions as pos

@@ -105,7 +105,6 @@ def h_connections(
 
         if dist < threshold:
             c_lst.append(connection)
-            # return connection
 
     return c_lst
 

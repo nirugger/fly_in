@@ -4,9 +4,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from rendering.renderer import Renderer
 
-from src.connection import Connection
-from src.zone import Zone, ZoneType
 from src.drone import Drone
+from src.zone import Zone, ZoneType
+from src.connection import Connection
+from rendering.utils import compute_percentage
 
 import rendering.positions as getpos
 
@@ -59,4 +60,46 @@ def connection(connection: Connection) -> list[str]:
     return [
         f"NAME : {connection.name}",
         f"ROOM : {connection.max_link_capacity}",
+    ]
+
+
+def keys() -> list[str]:
+
+    return [
+        "↑ : speed up",
+        "↓ : speed down",
+        "→ : next turn",
+        "← : prev turn",
+        "",
+        "V : path view",
+        "S : stop time",
+        "R : rainbow",
+        "Q : quit",
+        "",
+        "SPACE  : play / pause",
+        "ESCAPE : back to menu",
+    ]
+
+
+def data(rend: Renderer) -> list[str]:
+
+    perc = compute_percentage(rend.current_turn, rend.max_turn, 2)
+    return [
+        f"CURRENT TURN : {int(rend.current_turn)}",
+        f"MAXIMUM TURN : {rend.max_turn}",
+        f"COMPLETION % : {perc}",
+        "",
+        "DRONES WAITING  : "
+        f"{len(rend.drones_action_map['waiting'])}",
+        "DRONES PREPPING : "
+        f"{len(rend.drones_action_map['prepping'])}",
+        "DRONES MOVING   : "
+        f"{len(rend.drones_action_map['moving'])}",
+        "DRONES ARRIVED  : "
+        f"{len(rend.drones_action_map['arrived'])}",
+        "",
+        f"TOTAL  SIMULATION  COST : {rend.total_simulation_cost}",
+        "AVERAGE TURNS PER DRONE : "
+        f"{round(rend.average_turn_per_drone, 2)}"
+
     ]

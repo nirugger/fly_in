@@ -8,17 +8,21 @@ from src.connection import Connection
 from src.zone import Zone
 from src.drone import Drone
 
-import rendering.mousehover as mh
-import rendering.positions as getpos
-import rendering.build_tooltips as bt
+from rendering.data import TEXT_COLOR, ZONE_R, SCREEN_COLOR, DRONE_R, CONN_W
 from rendering.utils import (get_random_color,
                              build_connection_path,
                              get_neighbors)
-from rendering.draw import (draw_label, draw_drone, draw_zone, draw_connection,
-                            draw_tooltip, draw_button)
-from rendering.utils import compute_percentage as perc
-from rendering.data import TEXT_COLOR, ZONE_R, SCREEN_COLOR, DRONE_R, CONN_W
+from rendering.templates import (draw_drone,
+                                 draw_zone,
+                                 draw_connection,
+                                 draw_label,
+                                 draw_button,
+                                 draw_tooltip,)
+
 import pygame
+import rendering.mousehover as mh
+import rendering.positions as getpos
+import rendering.build_tooltips as bt
 
 
 def draw_hovered(rend: Renderer) -> None:
@@ -274,47 +278,13 @@ def draw_info(rend: Renderer) -> None:
     for hb in hbs:
         lines = []
         if hb == "keys":
-            lines = [
-                "↑ : speed up",
-                "↓ : speed down",
-                "→ : next turn",
-                "← : prev turn",
-                "",
-                "V : path view",
-                "S : stop time",
-                "R : rainbow",
-                "Q : quit",
-                "",
-                "SPACE  : play / pause",
-                "ESCAPE : back to menu",
-            ]
-
+            lines.extend(bt.keys())
             draw_tooltip(rend.screen, color,
                          rend.tooltip_font, lines,
                          (frame.left + 2, frame.top), is_info=True)
 
         elif hb == "data":
-            lines = [
-                f"CURRENT TURN : {int(rend.current_turn)}",
-                f"MAXIMUM TURN : {rend.max_turn}",
-                "COMPLETION % : "
-                f"{perc(rend.current_turn, rend.max_turn, 2)}",
-                "",
-                "DRONES WAITING  : "
-                f"{len(rend.drones_action_map['waiting'])}",
-                "DRONES PREPPING : "
-                f"{len(rend.drones_action_map['prepping'])}",
-                "DRONES MOVING   : "
-                f"{len(rend.drones_action_map['moving'])}",
-                "DRONES ARRIVED  : "
-                f"{len(rend.drones_action_map['arrived'])}",
-                "",
-                f"TOTAL  SIMULATION  COST : {rend.total_simulation_cost}",
-                "AVERAGE TURNS PER DRONE : "
-                f"{round(rend.average_turn_per_drone, 2)}"
-
-            ]
-
+            lines.extend(bt.data(rend))
             draw_tooltip(rend.screen, color,
                          rend.tooltip_font, lines,
                          (frame.left + 2, frame.top), is_info=True)

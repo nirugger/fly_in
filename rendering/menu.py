@@ -1,7 +1,7 @@
 """User interface menu for selecting maps and starting the simulation."""
 
-from rendering.data import MAPS, SCREEN_COLOR, FONT_REGULAR, FONT_BOLD
 from parser import RED, RESET
+from rendering.data import MAPS, SCREEN_COLOR, FONT_REGULAR, FONT_BOLD
 
 import rendering.draw_menu as draw
 import pygame

@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from rendering.utils import get_random_color
 from rendering.mousehover import h_button
-from rendering.draw import draw_label
+from rendering.templates import draw_label
 from rendering.data import TEXT_COLOR, MAPS, COLORS, INVALID_COLOR
 import pygame
 

@@ -9,8 +9,12 @@ from src.zone import ZoneType
 from rendering.draw_hovered import draw_hovered, draw_info
 from rendering.positions import get_drone_position
 from rendering.utils import get_random_color, get_zone_color
-from rendering.draw import draw_label, draw_drone, draw_zone, draw_connection
+from rendering.templates import (draw_label,
+                                 draw_drone,
+                                 draw_zone,
+                                 draw_connection)
 from rendering.data import TEXT_COLOR, DRONE_COLOR, CONN_W
+
 import pygame
 
 
