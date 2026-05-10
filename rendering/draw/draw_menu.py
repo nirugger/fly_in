@@ -4,10 +4,12 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from rendering.menu import Menu
 
-from rendering.utils import get_random_color
-from rendering.mousehover import h_button
-from rendering.templates import draw_label
+from rendering.draw.draw_templates import draw_label
+from rendering.utils.tools import get_random_color
+from rendering.utils.mousehover import h_button
+
 from rendering.data import TEXT_COLOR, MAPS, COLORS, INVALID_COLOR
+
 import pygame
 
 

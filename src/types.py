@@ -1,9 +1,10 @@
 """Shared type definitions for the fly-in simulation."""
-from __future__ import annotations
-from typing import TypedDict
-from dataclasses import dataclass
+
 from src.zone import Zone, ZoneType
 from src.connection import Connection
+
+from typing import TypedDict
+from dataclasses import dataclass
 
 
 class ZoneData(TypedDict):

@@ -4,7 +4,7 @@ from src.graph import Graph
 from src.zone import Zone, ZoneType
 from src.types import Path
 
-from rendering.utils import build_connection_path
+from rendering.utils.tools import build_connection_path
 
 
 class Pathfinder:

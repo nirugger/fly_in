@@ -11,10 +11,10 @@ from src.graph import Graph
 from src.types import Path
 
 from rendering.data import SCREEN_COLOR, FONT_REGULAR, FONT_BOLD
-from rendering.utils import average_turn_per_drone, total_turn_cost
+from rendering.utils.tools import average_turn_per_drone, total_turn_cost
 
-import rendering.draw_rend as draw
-import rendering.positions as pos
+import rendering.draw.draw_rend as draw
+import rendering.utils.positions as pos
 
 import pygame
 import math
@@ -225,7 +225,10 @@ class Renderer:
                     self.path_view = not self.path_view
 
                 if event.key == pygame.K_s:
-                    self.speed = 0.0
+                    if self.speed != 0.0:
+                        self.speed = 0.0
+                    else:
+                        self.speed = 0.5
 
                 if event.key == pygame.K_r:
                     self.random_color = not self.random_color

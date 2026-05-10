@@ -1,13 +1,12 @@
-from src.connection import Connection
+from rendering.data import COLORS
 from src.drone import Drone
 from src.zone import Zone, ZoneType
-from rendering.data import COLORS
+from src.connection import Connection
 
 import hashlib
 import random
 
 
-# da mettere in scheduler
 def get_occupancy_at_turn(
         t: int,
         zone: Zone,
@@ -26,29 +25,6 @@ def get_occupancy_at_turn(
         if zone is drone.position_at_turn(t):
             occupancy.append(drone)
     return occupancy
-
-
-# da mettere in graph
-def get_neighbors(
-        zone: Zone,
-        conn_list: list[Connection],
-        ) -> list[Zone]:
-    """Return rendered neighbor zones for a given zone.
-
-    Args:
-        zone (Zone): source zone to query.
-
-    Returns:
-        list[Zone]: list of adjacent zones.
-    """
-    neighbors = []
-    for connection in conn_list:
-        if connection.zone_a is zone:
-            neighbors.append(connection.zone_b)
-        elif connection.zone_b is zone:
-            neighbors.append(connection.zone_a)
-
-    return neighbors
 
 
 def average_turn_per_drone(

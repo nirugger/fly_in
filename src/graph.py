@@ -1,10 +1,9 @@
 """Graph module: holds the network of zones and connections."""
 
-from __future__ import annotations
+from src.types import RawData, RenderGrid
+from src.drone import Drone
 from src.zone import Zone, ZoneType
 from src.connection import Connection
-from src.drone import Drone
-from src.types import RawData, RenderGrid
 
 
 class Graph:
@@ -151,55 +150,24 @@ class Graph:
 
         return None
 
+    @staticmethod
     def get_neighbors(
-            self,
-            zone: Zone
-            ) -> list[tuple[Zone, int]]:
-        """Get all reachable Zones from 'zone' and their movement cost.
+            zone: Zone,
+            conn_list: list[Connection],
+            ) -> list[Zone]:
+        """Return rendered neighbor zones for a given zone.
 
         Args:
-            zone (Zone): The Zone whose neighbours are requested.
+            zone (Zone): source zone to query.
 
         Returns:
-            list[tuple[Zone, int]]: List of (neighbor_zone, movement_cost).
+            list[Zone]: list of adjacent zones.
         """
-        neighbors: list[tuple[Zone, int]] = []
-        for conn in self.finder_grid.get(zone, []):
-            neighbor = conn.get_other(zone)
-            neighbors.append((neighbor, neighbor.movement_cost()))
+        neighbors: list[Zone] = []
+        for connection in conn_list:
+            if connection.zone_a is zone:
+                neighbors.append(connection.zone_b)
+            elif connection.zone_b is zone:
+                neighbors.append(connection.zone_a)
+
         return neighbors
-
-    def get_pois(self) -> tuple[Zone, Zone]:
-        """Get the (start, end) Zone pair.
-
-        Returns:
-            tuple[Zone, Zone]: Tuple of (start_zone, end_zone).
-        """
-        return (self.start, self.end)
-
-    def __getitem__(
-            self,
-            key: Zone
-            ) -> list[Connection]:
-        """Get all Connections connected with given Zone 'key'.
-
-        Args:
-            key (Zone): the given Zone.
-
-        Returns:
-            list[Connection]: all Connection connected with 'key'.
-        """
-        return self.finder_grid[key]
-
-    def __setitem__(
-            self,
-            key: Zone,
-            value: list[Connection]
-            ) -> None:
-        """Add a 'Zone: list[Connection]' item to the grid.
-
-        Args:
-            key (Zone): the 'key' of grid item.
-            value (list[Connection]): the 'value' of grid item.
-        """
-        self.finder_grid[key] = value

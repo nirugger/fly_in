@@ -1,8 +1,9 @@
 """Drawing helper functions for the Pygame renderer."""
 
-from rendering.data import (
-    TEXT_COLOR, CONN_W, ZONE_R, CONN_COLOR,
-    SCREEN_COLOR, ZONE_R2, ZONE_W, ZONE_W2, DRONE_R, DRONE_W)
+from rendering.data import (DRONE_R, DRONE_W,
+                            ZONE_R, ZONE_R2, ZONE_W, ZONE_W2,
+                            CONN_W,  CONN_COLOR,
+                            SCREEN_COLOR, TEXT_COLOR,)
 
 import pygame
 import math
@@ -207,21 +208,23 @@ def draw_tooltip(
     padding_x = 12
     padding_y = 12
 
-    screen_size = surface.get_size()
     tooltip_w = max_width + padding_x * 2
     tooltip_h = line_height * len(lines) + padding_y * 2
 
-    screen_cx = screen_size[0] // 2
-    if pos[0] > screen_cx:
-        tooltip_x = pos[0] - tooltip_w
-    else:
-        tooltip_x = pos[0]
+    tooltip_x, tooltip_y = pos
+    if is_info:
+        screen_size = surface.get_size()
+        screen_cx = screen_size[0] // 2
+        if pos[0] > screen_cx:
+            tooltip_x = pos[0] - tooltip_w
+        else:
+            tooltip_x = pos[0]
 
-    screen_cy = screen_size[1] // 2
-    if pos[1] < screen_cy:
-        tooltip_y = pos[1]
-    else:
-        tooltip_y = pos[1] - tooltip_h
+        screen_cy = screen_size[1] // 2
+        if pos[1] < screen_cy:
+            tooltip_y = pos[1]
+        else:
+            tooltip_y = pos[1] - tooltip_h
 
     overlay = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
 

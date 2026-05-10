@@ -4,11 +4,12 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from rendering.renderer import Renderer
 
+from rendering.data import SPAN, ZONE_R
+from rendering.utils.tools import get_occupancy_at_turn
+
 from src.zone import Zone, ZoneType
 from src.drone import Drone
 
-from rendering.utils import get_occupancy_at_turn
-from rendering.data import SPAN, ZONE_R
 import math
 
 
@@ -71,10 +72,10 @@ def update_angles_and_orbit(
             rend.speed * dt * (15 / drone.drones_in_zones)
         )
 
-    if rend.orbit_maxxed is False:
-        rend.orbit_offset += 1
-    else:
-        rend.orbit_offset -= 1
+    # if rend.orbit_maxxed is False and rend.speed != 0.0:
+    #     rend.orbit_offset += 1
+    # elif rend.orbit_maxxed is True and rend.speed != 0.0:
+    #     rend.orbit_offset -= 1
 
     if rend.orbit_offset > SPAN or rend.orbit_offset < 0:
         rend.orbit_maxxed = not rend.orbit_maxxed

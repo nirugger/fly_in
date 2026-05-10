@@ -1,9 +1,9 @@
 """Scheduler module for assigning paths to drones."""
 
-from src.pathfinder import Pathfinder
-from src.graph import Graph
 from src.drone import Drone
 from src.zone import Zone
+from src.pathfinder import Pathfinder
+from src.graph import Graph
 
 
 class Scheduler:

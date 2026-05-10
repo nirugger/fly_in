@@ -3,7 +3,7 @@
 from parser import RED, RESET
 from rendering.data import MAPS, SCREEN_COLOR, FONT_REGULAR, FONT_BOLD
 
-import rendering.draw_menu as draw
+import rendering.draw.draw_menu as draw
 import pygame
 import sys
 

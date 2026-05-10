@@ -4,17 +4,14 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from rendering.renderer import Renderer
 
+from rendering.draw.draw_hovered import draw_hovered, draw_info
+from rendering.utils.positions import get_drone_position
+from rendering.utils.tools import get_random_color, get_zone_color
+
+from rendering.data import TEXT_COLOR, DRONE_COLOR, CONN_W
 from src.zone import ZoneType
 
-from rendering.draw_hovered import draw_hovered, draw_info
-from rendering.positions import get_drone_position
-from rendering.utils import get_random_color, get_zone_color
-from rendering.templates import (draw_label,
-                                 draw_drone,
-                                 draw_zone,
-                                 draw_connection)
-from rendering.data import TEXT_COLOR, DRONE_COLOR, CONN_W
-
+import rendering.draw.draw_templates as draw
 import pygame
 
 
@@ -29,7 +26,7 @@ def drones(rend: Renderer) -> None:
             if rend.random_color
             else DRONE_COLOR
         )
-        draw_drone(rend.screen, pos, color)
+        draw.draw_drone(rend.screen, pos, color)
 
 
 def zones(rend: Renderer) -> None:
@@ -37,7 +34,7 @@ def zones(rend: Renderer) -> None:
         if zone.zone_type is ZoneType.CONNECTION:
             continue
         color = get_zone_color(zone)
-        draw_zone(rend.screen, position, color)
+        draw.draw_zone(rend.screen, position, color)
 
 
 def connections(rend: Renderer) -> None:
@@ -47,7 +44,7 @@ def connections(rend: Renderer) -> None:
         end = rend.z_positions.get(connection.zone_b)
         if start is None or end is None:
             continue
-        draw_connection(rend.screen, start, end)
+        draw.draw_connection(rend.screen, start, end)
 
 
 def hovered(rend: Renderer) -> None:
@@ -85,8 +82,8 @@ def finish(
 
     screen.blit(overlay, (0, 0))
 
-    frame = draw_label(screen, "SIMULATION COMPLETE", (cx, cy),
-                       font, color)
+    frame = draw.draw_label(screen, "SIMULATION COMPLETE", (cx, cy),
+                            font, color)
 
     pygame.draw.line(
         screen, color, frame.bottomleft, frame.bottomright, CONN_W

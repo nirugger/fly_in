@@ -3,26 +3,21 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from rendering.renderer import Renderer
+    from src.types import Path
 
 from src.connection import Connection
 from src.zone import Zone
 from src.drone import Drone
 
 from rendering.data import TEXT_COLOR, ZONE_R, SCREEN_COLOR, DRONE_R, CONN_W
-from rendering.utils import (get_random_color,
-                             build_connection_path,
-                             get_neighbors)
-from rendering.templates import (draw_drone,
-                                 draw_zone,
-                                 draw_connection,
-                                 draw_label,
-                                 draw_button,
-                                 draw_tooltip,)
+from rendering.utils.tools import (get_random_color,
+                                   build_connection_path)
 
+import rendering.utils.mousehover as hover
+import rendering.utils.positions as getpos
+import rendering.draw.build_tooltips as tooltip
+import rendering.draw.draw_templates as draw
 import pygame
-import rendering.mousehover as mh
-import rendering.positions as getpos
-import rendering.build_tooltips as bt
 
 
 def draw_hovered(rend: Renderer) -> None:
@@ -31,9 +26,9 @@ def draw_hovered(rend: Renderer) -> None:
         return
 
     hovered: tuple[list[Drone], list[Zone], list[Connection]] = (
-        mh.h_drones(rend, DRONE_R),
-        mh.h_zones(rend, ZONE_R),
-        mh.h_connections(rend, 6.9)
+        hover.h_drones(rend, DRONE_R),
+        hover.h_zones(rend, ZONE_R),
+        hover.h_connections(rend, 6.9)
     )
     color = get_random_color() if rend.random_color else TEXT_COLOR
 
@@ -62,10 +57,10 @@ def hovered_drones(
         if pos is None:
             continue
 
-        d_lines = bt.drone(drone, rend)
-        draw_drone(rend.screen, pos, color, hovered=True)
-        draw_tooltip(rend.screen, color, rend.tooltip_font, d_lines,
-                     pos=(30, 30 + offset))
+        d_lines = tooltip.drone(drone, rend)
+        draw.draw_drone(rend.screen, pos, color, hovered=True)
+        draw.draw_tooltip(rend.screen, color, rend.tooltip_font, d_lines,
+                          pos=(30, 30 + offset))
         offset += rend.tooltip_font.get_linesize() * len(d_lines) + 30
 
 
@@ -87,11 +82,11 @@ def hovered_connections(
         if start is None or end is None:
             continue
 
-        c_lines = bt.connection(connection)
-        draw_connection(rend.screen, start, end, color, hovered=True)
-        draw_tooltip(rend.screen, color,
-                     rend.tooltip_font, c_lines,
-                     pos=(30, 30 + offset))
+        c_lines = tooltip.connection(connection)
+        draw.draw_connection(rend.screen, start, end, color, hovered=True)
+        draw.draw_tooltip(rend.screen, color,
+                          rend.tooltip_font, c_lines,
+                          pos=(30, 30 + offset))
         offset += rend.tooltip_font.get_linesize() * len(c_lines) + 30
 
 
@@ -106,12 +101,13 @@ def hovered_zones(
         if start is None:
             continue
 
-        z_lines = bt.zone(zone, rend)
-        neighbors = get_neighbors(zone,
-                                  rend.graph.render_grid.connections)
+        z_lines = tooltip.zone(zone, rend)
+        neighbors = rend.graph.get_neighbors(
+            zone, rend.graph.render_grid.connections
+            )
 
         if len(neighbors) == 0:
-            draw_zone(rend.screen, start, color, hovered=True)
+            draw.draw_zone(rend.screen, start, color, hovered=True)
         else:
             z_lines.extend(["", "NEIGHBORS:"])
 
@@ -119,51 +115,13 @@ def hovered_zones(
             end = rend.z_positions.get(z)
             if end is None:
                 continue
-            draw_connection(rend.screen, start, end, color, hovered=True)
-            z_lines.extend(bt.neighbor(z))
+            draw.draw_connection(rend.screen, start, end, color, hovered=True)
+            z_lines.extend(tooltip.neighbor(z))
 
-        draw_tooltip(rend.screen, color,
-                     rend.tooltip_font, z_lines,
-                     pos=(30, 30 + offset))
+        draw.draw_tooltip(rend.screen, color,
+                          rend.tooltip_font, z_lines,
+                          pos=(30, 30 + offset))
         offset += rend.tooltip_font.get_linesize() * len(z_lines) + 30
-
-# def pathtips(
-#         rend: Renderer,
-#         hovered_cs: list[Connection],
-#         hovered_zs: list[Zone],
-#         hovered_ds: list[Drone],
-#         color: tuple[int, int, int]
-#         ) -> None:
-
-#     # path = {}
-#     if (len(hovered_ds) > 0
-#             and rend.current_turn < rend.max_turn):
-#         offset: int = 0
-#         for drone in hovered_ds:
-#             pos = rend._get_drone_position(drone)
-#             if pos is None:
-#                 continue
-
-#             draw_drone(rend.screen, pos, color, hovered=True)
-#             zone_list = [i[1] for i in drone.path if not i[1].is_start]
-#             zone_list.insert(0, drone.path[0][1])
-#             # conn_list = build_connection_path(zone_list)
-#             for p in rend.paths:
-#                 if p['z_path'] == zone_list:
-#                     chosen_p = p
-#                     break
-
-#             p_lines = [
-#                 f"TOTAL COST : {chosen_p['cost']}"
-#                 # f"{sum(z.movement_cost for z in zone_list)} turns",
-#                 f"CAPACITY : {chosen_p['cap']}",
-#                 # f"CHOSEN BY : {going if going != being else 'wait'}"
-#             ]
-
-#             draw_tooltip(rend.screen, color,
-#                             rend.tooltip_font, p_lines,
-#                             pos=(30, 30 + offset))
-#             offset += rend.tooltip_font.get_linesize() * len(p_lines) + 30
 
 
 def hovered_paths(
@@ -172,12 +130,18 @@ def hovered_paths(
         color: tuple[int, int, int]
         ) -> None:
 
+    offset: int = 0
+    h_offset: int = 0
+    max_w: int = 0
+    chosen_p: Path | None = None
+    path_ids: set[int] = set()
+
     if len(hovered[0]) > 0:
         for drone in hovered[0]:
             pos = getpos.get_drone_position(rend, drone)
             if pos is None:
                 continue
-            draw_drone(rend.screen, pos, color, hovered=True)
+            draw.draw_drone(rend.screen, pos, color, hovered=True)
             zone_list = [i[1] for i in drone.path if not i[1].is_start]
             zone_list.insert(0, drone.path[0][1])
             conn_list = build_connection_path(zone_list)
@@ -187,7 +151,29 @@ def hovered_paths(
                 end = rend.z_positions.get(c.zone_b)
                 if start is None or end is None:
                     continue
-                draw_connection(rend.screen, start, end, color, hovered=True)
+                draw.draw_connection(rend.screen, start, end, color, True)
+
+            for p in rend.paths:
+                if p['c_path'] == conn_list:
+                    chosen_p = p
+                    break
+            if not chosen_p or chosen_p['path_id'] in path_ids:
+                continue
+            path_ids.add(chosen_p['path_id'])
+
+            p_lines = tooltip.path(chosen_p, rend)
+            curr_w = max(rend.tooltip_font.size(s)[0] for s in p_lines)
+            if max_w < curr_w:
+                max_w = curr_w
+
+            draw.draw_tooltip(rend.screen, color,
+                              rend.tooltip_font, p_lines,
+                              pos=(30 + h_offset, 30 + offset))
+
+            offset += rend.tooltip_font.get_linesize() * len(p_lines) + 30
+            if offset + 30 > rend.screen.get_height():
+                offset = 0
+                h_offset += max_w + 30
 
     elif len(hovered[1]) > 0:
         for hz in hovered[1]:
@@ -198,13 +184,35 @@ def hovered_paths(
             c_paths = [[c for c in p['c_path'] if hz in p['z_path']]
                        for p in rend.paths]
 
-            for lst in c_paths:
-                for c in lst:
+            for conn_list in c_paths:
+                for c in conn_list:
                     start = rend.z_positions.get(c.zone_a)
                     end = rend.z_positions.get(c.zone_b)
                     if start is None or end is None:
                         continue
-                    draw_connection(rend.screen, start, end, color, True)
+                    draw.draw_connection(rend.screen, start, end, color, True)
+
+                for p in rend.paths:
+                    if p['c_path'] == conn_list:
+                        chosen_p = p
+                        break
+                if not chosen_p or chosen_p['path_id'] in path_ids:
+                    continue
+                path_ids.add(chosen_p['path_id'])
+
+                p_lines = tooltip.path(chosen_p, rend)
+                curr_w = max(rend.tooltip_font.size(s)[0] for s in p_lines)
+                if max_w < curr_w:
+                    max_w = curr_w
+
+                draw.draw_tooltip(rend.screen, color,
+                                  rend.tooltip_font, p_lines,
+                                  pos=(30 + h_offset, 30 + offset))
+
+                offset += rend.tooltip_font.get_linesize() * len(p_lines) + 30
+                if offset + 30 > rend.screen.get_height():
+                    offset = 0
+                    h_offset += max_w + 30
 
     elif len(hovered[2]) > 0:
         for hc in hovered[2]:
@@ -215,13 +223,35 @@ def hovered_paths(
             c_paths = [[c for c in p['c_path'] if hc in p['c_path']]
                        for p in rend.paths]
 
-            for lst in c_paths:
-                for c in lst:
+            for conn_list in c_paths:
+                for c in conn_list:
                     start = rend.z_positions.get(c.zone_a)
                     end = rend.z_positions.get(c.zone_b)
                     if start is None or end is None:
                         continue
-                    draw_connection(rend.screen, start, end, color, True)
+                    draw.draw_connection(rend.screen, start, end, color, True)
+
+                for p in rend.paths:
+                    if p['c_path'] == conn_list:
+                        chosen_p = p
+                        break
+                if not chosen_p or chosen_p['path_id'] in path_ids:
+                    continue
+                path_ids.add(chosen_p['path_id'])
+
+                p_lines = tooltip.path(chosen_p, rend)
+                curr_w = max(rend.tooltip_font.size(s)[0] for s in p_lines)
+                if max_w < curr_w:
+                    max_w = curr_w
+
+                draw.draw_tooltip(rend.screen, color,
+                                  rend.tooltip_font, p_lines,
+                                  pos=(30 + h_offset, 30 + offset))
+
+                offset += rend.tooltip_font.get_linesize() * len(p_lines) + 30
+                if offset + 30 > rend.screen.get_height():
+                    offset = 0
+                    h_offset += max_w + 30
 
 
 def draw_info(rend: Renderer) -> None:
@@ -230,13 +260,13 @@ def draw_info(rend: Renderer) -> None:
     screen_w = rend.screen.get_width()
     color = get_random_color() if rend.random_color else TEXT_COLOR
 
-    rend.buttons['info'] = draw_button(
+    rend.buttons['info'] = draw.draw_button(
         rend.screen, color, rend.title_font, ["IN", "FO"],
         (screen_w, 0), interline=-18, offset=(-(width + 30), 30),
         frame=True
     )
 
-    hbs = mh.h_buttons(rend)
+    hbs = hover.h_buttons(rend)
     if hbs is None:
         return
 
@@ -261,12 +291,12 @@ def draw_info(rend: Renderer) -> None:
         border_bottom_right_radius=10
         )
 
-    rend.buttons['keys'] = draw_label(
+    rend.buttons['keys'] = draw.draw_label(
         rend.screen, "KEYS", (frame_cx, frame_cy),
         rend.hud_font_bold, TEXT_COLOR,
         offset=(0, -22), is_info=True
     )
-    rend.buttons['data'] = draw_label(
+    rend.buttons['data'] = draw.draw_label(
         rend.screen, "DATA", (frame_cx, frame_cy),
         rend.hud_font_bold, TEXT_COLOR,
         offset=(0, 21), is_info=True
@@ -278,13 +308,13 @@ def draw_info(rend: Renderer) -> None:
     for hb in hbs:
         lines = []
         if hb == "keys":
-            lines.extend(bt.keys())
-            draw_tooltip(rend.screen, color,
-                         rend.tooltip_font, lines,
-                         (frame.left + 2, frame.top), is_info=True)
+            lines.extend(tooltip.keys())
+            draw.draw_tooltip(rend.screen, color, rend.tooltip_font,
+                              lines, (frame.left + 2, frame.top),
+                              is_info=True)
 
         elif hb == "data":
-            lines.extend(bt.data(rend))
-            draw_tooltip(rend.screen, color,
-                         rend.tooltip_font, lines,
-                         (frame.left + 2, frame.top), is_info=True)
+            lines.extend(tooltip.data(rend))
+            draw.draw_tooltip(rend.screen, color, rend.tooltip_font,
+                              lines, (frame.left + 2, frame.top),
+                              is_info=True)

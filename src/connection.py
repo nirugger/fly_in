@@ -3,7 +3,6 @@
 Each Connection represents an edge of the graph.
 """
 
-from __future__ import annotations
 from src.zone import Zone, ZoneType
 
 
@@ -36,7 +35,7 @@ class Connection:
         if (self.zone_a.zone_type is ZoneType.RESTRICTED or
                 self.zone_b.zone_type is ZoneType.RESTRICTED):
             self.zone_c = Zone(
-                name=f"{self.zone_a.name}-{self.zone_b.name}",
+                name=self.name,
                 zone_type=ZoneType.CONNECTION,
                 x=(self.zone_a.x + self.zone_b.x) // 2,
                 y=(self.zone_a.y + self.zone_b.y) // 2,

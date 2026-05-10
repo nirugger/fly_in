@@ -3,23 +3,6 @@
 import random
 import os
 
-MAPS = {
-    '01_e': 'maps/easy/01_linear_path.txt',
-    '02_e': 'maps/easy/02_simple_fork.txt',
-    '03_e': 'maps/easy/03_basic_capacity.txt',
-    '01_m': 'maps/medium/01_dead_end_trap.txt',
-    '02_m': 'maps/medium/02_circular_loop.txt',
-    '03_m': 'maps/medium/03_priority_puzzle.txt',
-    '01_h': 'maps/hard/01_maze_nightmare.txt',
-    '02_h': 'maps/hard/02_capacity_hell.txt',
-    '03_h': 'maps/hard/03_ultimate_challenge.txt',
-    '04_h': 'maps/challenger/01_the_impossible_dream.txt',
-    '01_c': 'maps/custom/03_custom_highway.txt',
-    '02_c': 'maps/custom/02_feedback_loop_puzzle.txt',
-    '03_c': 'maps/custom/04_custom_labyrinth_city.txt',
-    '04_c': 'maps/custom/00_a_day_off.txt',
-}
-
 RESOLUTION: tuple[int, int] = (1920, 1080)
 SCREEN_COLOR: tuple[int, int, int] = (5, 10, 15)
 
@@ -45,6 +28,23 @@ FONT_BOLD: str = os.path.join(FONT_DIR, 'JetBrainsMono-Bold.ttf')
 MIN_INT: int = -2147483648
 MAX_INT: int = 2147483647
 RAND_INT: int = random.randint(MIN_INT, MAX_INT)
+
+MAPS = {
+    '01_e': 'maps/easy/01_linear_path.txt',
+    '02_e': 'maps/easy/02_simple_fork.txt',
+    '03_e': 'maps/easy/03_basic_capacity.txt',
+    '01_m': 'maps/medium/01_dead_end_trap.txt',
+    '02_m': 'maps/medium/02_circular_loop.txt',
+    '03_m': 'maps/medium/03_priority_puzzle.txt',
+    '01_h': 'maps/hard/01_maze_nightmare.txt',
+    '02_h': 'maps/hard/02_capacity_hell.txt',
+    '03_h': 'maps/hard/03_ultimate_challenge.txt',
+    '04_h': 'maps/challenger/01_the_impossible_dream.txt',
+    '01_c': 'maps/custom/03_custom_highway.txt',
+    '02_c': 'maps/custom/02_feedback_loop_puzzle.txt',
+    '03_c': 'maps/custom/04_custom_labyrinth_city.txt',
+    '04_c': 'maps/custom/00_a_day_off.txt',
+}
 
 COLORS: dict[str, tuple[int, int, int]] = {
     # --- Original colors, darkened ---

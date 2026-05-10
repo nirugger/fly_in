@@ -3,13 +3,15 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from rendering.renderer import Renderer
+    from src.types import Path
+
+from rendering.utils.tools import compute_percentage
 
 from src.drone import Drone
 from src.zone import Zone, ZoneType
 from src.connection import Connection
-from rendering.utils import compute_percentage
 
-import rendering.positions as getpos
+import rendering.utils.positions as getpos
 
 
 def drone(drone: Drone, rend: Renderer) -> list[str]:
@@ -22,9 +24,9 @@ def drone(drone: Drone, rend: Renderer) -> list[str]:
             next_z = z.name
 
     return [
-        f"DRONE ID : {drone.drone_id}",
-        f"STAY IN : {current_z}",
-        f"MOVE TO : {next_z if next_z != current_z else 'wait'}"
+        f"DRONE  ID : {drone.drone_id}",
+        f"THIS TURN : {current_z}",
+        f"NEXT TURN : {next_z}"
     ]
 
 
@@ -60,6 +62,23 @@ def connection(connection: Connection) -> list[str]:
     return [
         f"NAME : {connection.name}",
         f"ROOM : {connection.max_link_capacity}",
+    ]
+
+
+def path(p: Path, rend: Renderer) -> list[str]:
+
+    drones_on_path: int = 0
+    for d in rend.drones:
+        zone_list = [i[1] for i in d.path if not i[1].is_start]
+        zone_list.insert(0, d.path[0][1])
+        if p["z_path"] == zone_list:
+            drones_on_path += 1
+
+    return [
+        f"PATH ID    : {p['path_id']}",
+        f"TOTAL COST : {p['cost']}",
+        f"CAPACITY   : {p['cap']}",
+        f"CHOSEN BY  : {drones_on_path} / {len(rend.drones)}"
     ]
 
 

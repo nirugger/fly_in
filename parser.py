@@ -1,5 +1,5 @@
 """Module containing all parsing methots, parsing errors and Parser class."""
-from __future__ import annotations
+
 from src.types import ZoneData, ConnectionData, RawData
 from src.zone import ZoneType
 import sys
@@ -117,29 +117,6 @@ class ParseWarning(Exception):
             f"{YELLOW}[WARNING]:{RESET} "
             f"line {line_num}: {message}"
         )
-
-
-# def parse_argv(argv: list[str]) -> str:
-
-#     try:
-#         path = argv[1]
-
-#     except IndexError:
-#         print("select map:")
-#         print(
-#             "0: test\n"
-#             "1: linear_path"
-#         )
-#         choice = input()
-#         match choice:
-#             case "0":
-#                 path = "maps/test/parsing_test.txt"
-#             case "1":
-#                 path = "maps/easy/01_linear_path.txt"
-#             case _:
-#                 print("\nfuck you\n")
-#                 sys.exit(1)
-#     return path
 
 
 class Parser:

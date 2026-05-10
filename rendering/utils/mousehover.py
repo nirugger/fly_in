@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from rendering.renderer import Renderer
     from rendering.menu import Menu
 
-from rendering.positions import get_drone_position
+from rendering.utils.positions import get_drone_position
 
 from src.connection import Connection
 from src.zone import Zone, ZoneType

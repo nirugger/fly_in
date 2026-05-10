@@ -56,6 +56,7 @@ class Zone:
         self.is_end = is_end
         self.max_drones = max_drones
         self.color = color
+
         self.connections: list[Connection] = []
         self.current_drones: list[Drone] = []
         self.residual = max_drones
