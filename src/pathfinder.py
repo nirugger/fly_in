@@ -4,6 +4,8 @@ from src.graph import Graph
 from src.zone import Zone, ZoneType
 from src.types import Path
 
+from rendering.utils import build_connection_path
+
 
 class Pathfinder:
     """Finds shortest available paths from the start to the end hub."""
@@ -57,7 +59,7 @@ class Pathfinder:
         Args:
             path_capacity (Path): path information containing capacity.
         """
-        path = path_capacity['path']
+        path = path_capacity['z_path']
         capacity = path_capacity['cap']
 
         for i in range(1, len(path) - 1):
@@ -123,10 +125,12 @@ class Pathfinder:
             current = current.prev
 
         self.paths.append(Path(
-            path=path[::-1],
+            path_id=len(self.paths) + 1,
+            z_path=path[::-1],
+            c_path=build_connection_path(path[::-1]),
             cap=self.get_path_capacity(path),
             cost=len(path) - 1,
-            restricted=self._has_restricted(path[::-1])
+            # restricted=self._has_restricted(path[::-1])
         ))
 
     def find_next_shortest_path(self) -> bool:

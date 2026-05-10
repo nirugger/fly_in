@@ -1,0 +1,89 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rendering.renderer import Renderer
+
+from src.zone import ZoneType
+
+from rendering.draw_hovered import draw_hovered, draw_info
+from rendering.positions import get_drone_position
+from rendering.utils import get_random_color, get_zone_color
+from rendering.draw import draw_label, draw_drone, draw_zone, draw_connection
+from rendering.data import TEXT_COLOR, DRONE_COLOR, CONN_W
+import pygame
+
+
+def drones(rend: Renderer) -> None:
+    for drone in rend.drones:
+        pos = get_drone_position(rend, drone)
+        if pos is None:
+            continue
+
+        color = (
+            get_random_color()
+            if rend.random_color
+            else DRONE_COLOR
+        )
+        draw_drone(rend.screen, pos, color)
+
+
+def zones(rend: Renderer) -> None:
+    for zone, position in rend.z_positions.items():
+        if zone.zone_type is ZoneType.CONNECTION:
+            continue
+        color = get_zone_color(zone)
+        draw_zone(rend.screen, position, color)
+
+
+def connections(rend: Renderer) -> None:
+    for connection in rend.graph.render_grid.connections:
+
+        start = rend.z_positions.get(connection.zone_a)
+        end = rend.z_positions.get(connection.zone_b)
+        if start is None or end is None:
+            continue
+        draw_connection(rend.screen, start, end)
+
+
+def hovered(rend: Renderer) -> None:
+    draw_hovered(rend)
+
+
+def info(rend: Renderer) -> None:
+    draw_info(rend)
+
+
+def finish(
+        screen: pygame.Surface,
+        font: pygame.font.Font,
+        color_flag: bool = False
+        ) -> None:
+    """Draw the simulation completion overlay."""
+    color = (
+        get_random_color()
+        if color_flag
+        else TEXT_COLOR
+    )
+    cx, cy = (screen.get_width() // 2,
+              screen.get_height() // 2)
+
+    overlay = pygame.Surface(
+        (screen.get_width(), screen.get_height()),
+        pygame.SRCALPHA
+    )
+
+    pygame.draw.rect(
+        overlay,
+        (0, 0, 0, 180),
+        overlay.get_rect()
+    )
+
+    screen.blit(overlay, (0, 0))
+
+    frame = draw_label(screen, "SIMULATION COMPLETE", (cx, cy),
+                       font, color)
+
+    pygame.draw.line(
+        screen, color, frame.bottomleft, frame.bottomright, CONN_W
+    )

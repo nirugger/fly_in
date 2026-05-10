@@ -65,7 +65,7 @@ class Scheduler:
 
         while self.unassigned_drones:
             for path_cap_cost in self.pathfinder.paths:
-                current_path = path_cap_cost['path']
+                current_path = path_cap_cost['z_path']
                 current_cap = path_cap_cost['cap']
                 current_cost = path_cap_cost['cost']
                 # if path_cap_cost['restricted'] == 1 and turn % 2 == 0:

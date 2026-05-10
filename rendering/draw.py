@@ -1,21 +1,32 @@
 """Drawing helper functions for the Pygame renderer."""
 
-from rendering.data import TEXT_COLOR, CONN_W, ZONE_R, CONN_COLOR
-from rendering.utils import get_random_color
+from rendering.data import (
+    TEXT_COLOR, CONN_W, ZONE_R, CONN_COLOR,
+    SCREEN_COLOR, ZONE_R2, ZONE_W, ZONE_W2, DRONE_R, DRONE_W)
 
 import pygame
 import math
 
-Color = tuple[int, int, int]
 
-
-def draw_circle(
+def draw_drone(
         surface: pygame.Surface,
-        color: Color,
-        center: tuple[int, int],
-        radius: float,
-        width: int = 0,
-        edge: bool = False
+        pos: tuple[int, int],
+        color: tuple[int, int, int],
+        hovered: bool = False,
+        ) -> None:
+
+    if hovered:
+        pygame.draw.circle(surface, color, pos, DRONE_R + 1, 2)
+        return
+    pygame.draw.circle(surface, SCREEN_COLOR, pos, DRONE_R)
+    pygame.draw.circle(surface, color, pos, DRONE_R, DRONE_W)
+
+
+def draw_zone(
+        surface: pygame.Surface,
+        pos: tuple[int, int],
+        color: tuple[int, int, int],
+        hovered: bool = False
         ) -> None:
     """Draw a circle on the target surface.
 
@@ -27,22 +38,29 @@ def draw_circle(
         width (int): line width, zero for filled circle.
         edge (bool): when True, draw a black outline.
     """
-    pygame.draw.circle(surface, color, center, radius, width)
-    if edge:
-        pygame.draw.circle(surface, (0, 0, 0), center, radius, 2)
+    if hovered:
+        pygame.draw.circle(surface, color, pos, ZONE_R + 2, CONN_W)
+        return
+    pygame.draw.circle(surface, SCREEN_COLOR, pos, ZONE_R)
+    pygame.draw.circle(surface, color, pos, ZONE_R, ZONE_W)
+    pygame.draw.circle(surface, color, pos, ZONE_R2, ZONE_W2)
 
 
 def draw_connection(
         surface: pygame.Surface,
         start: tuple[int, int],
         end: tuple[int, int],
-        width: int = CONN_W,
         color: tuple[int, int, int] = CONN_COLOR,
+        hovered: bool = False,
+        width: int = CONN_W,
         ) -> tuple[tuple[int, int], tuple[int, int]]:
+
+    if hovered:
+        pygame.draw.circle(surface, color, start, ZONE_R + 2, width)
+        pygame.draw.circle(surface, color, end, ZONE_R + 2, width)
 
     x1, y1 = start
     x2, y2 = end
-
     angle = math.atan2(abs(y2 - y1), abs(x2 - x1))
 
     if x2 > x1:
@@ -66,70 +84,12 @@ def draw_connection(
     return (n_start, n_end)
 
 
-def draw_hovered_connection(
-        surface: pygame.Surface,
-        start: tuple[int, int],
-        end: tuple[int, int],
-        width: int = CONN_W,
-        color: tuple[int, int, int] = TEXT_COLOR
-        ) -> None:
-
-    pygame.draw.circle(surface, color,
-                       start, ZONE_R + 2, width)
-
-    pygame.draw.circle(surface, color,
-                       end, ZONE_R + 2, width)
-
-    draw_connection(surface, start, end,
-                    width, color)
-
-
-def draw_line(
-        surface: pygame.Surface,
-        color: Color,
-        start: tuple[int, int],
-        end: tuple[int, int],
-        width: int
-        ) -> None:
-    """Draw a line on the target surface.
-
-    Args:
-        surface (pygame.Surface): rendering surface.
-        color (Color): line colour.
-        start (tuple[int, int]): start coordinates.
-        end (tuple[int, int]): end coordinates.
-        width (int): line thickness.
-    """
-    pygame.draw.line(surface, color, start, end, width)
-
-
-def draw_arc(
-        surface: pygame.Surface,
-        center: tuple[int, int],
-        radius: float,
-        connection_point: tuple[int, int],
-        color: tuple[int, int, int] = (255, 0, 0)
-        ) -> None:
-
-    cx, cy = center
-    px, py = connection_point
-
-    arc_angle = math.atan2(abs(py - cy), abs(px - cx))
-    span = math.radians(45)
-    start_angle = arc_angle + span
-    end_angle = arc_angle - span
-
-    rect = pygame.Rect(cx - radius, cy - radius, radius * 2, radius * 2)
-
-    pygame.draw.arc(surface, color, rect, start_angle, end_angle, CONN_W)
-
-
 def draw_label(
         surface: pygame.Surface,
         text: str,
         position: tuple[int, int],
         font: pygame.font.Font,
-        color: Color,
+        color: tuple[int, int, int],
         offset: tuple[int, int] = (0, 0),
         is_info: bool = False
         ) -> pygame.Rect:
@@ -159,35 +119,9 @@ def draw_label(
     return pygame.Rect(x, y, width, height)
 
 
-def draw_hud(
-        surface: pygame.Surface,
-        text: str,
-        position: tuple[int, int],
-        font: pygame.font.Font,
-        color: Color,
-        offset: tuple[int, int] = (0, 0)
-        ) -> None:
-    """Render HUD text at a specified position.
-
-    Args:
-        surface (pygame.Surface): render target.
-        text (str): text to display.
-        position (tuple[int, int]): top-left reference position.
-        font (pygame.font.Font): font for rendering.
-        color (Color): text color.
-        offset (tuple[int, int], optional): pixel offset from 'position'.
-    """
-    text_surface = font.render(text, True, color)
-    centered_position = (
-        position[0] + offset[0],
-        position[1] + offset[1]
-    )
-    surface.blit(text_surface, centered_position)
-
-
 def draw_button(
         surface: pygame.Surface,
-        color: Color,
+        color: tuple[int, int, int],
         font: pygame.font.Font,
         lines: list[str],
         pos: tuple[int, int],
@@ -252,7 +186,7 @@ def draw_button(
 
 def draw_tooltip(
         surface: pygame.Surface,
-        color: Color,
+        color: tuple[int, int, int],
         font: pygame.font.Font,
         lines: list[str],
         pos: tuple[int, int],
@@ -314,38 +248,3 @@ def draw_tooltip(
             text_surface,
             (tooltip_x + padding_x, tooltip_y + padding_y + i * line_height)
         )
-
-
-def draw_finish(
-        screen: pygame.Surface,
-        font: pygame.font.Font,
-        color_flag: bool = False
-        ) -> None:
-    """Draw the simulation completion overlay."""
-    color = (
-        get_random_color()
-        if color_flag
-        else TEXT_COLOR
-    )
-    cx, cy = (screen.get_width() // 2,
-              screen.get_height() // 2)
-
-    overlay = pygame.Surface(
-        (screen.get_width(), screen.get_height()),
-        pygame.SRCALPHA
-    )
-
-    pygame.draw.rect(
-        overlay,
-        (0, 0, 0, 180),
-        overlay.get_rect()
-    )
-
-    screen.blit(overlay, (0, 0))
-
-    frame = draw_label(screen, "SIMULATION COMPLETE", (cx, cy),
-                       font, color)
-
-    pygame.draw.line(
-        screen, color, frame.bottomleft, frame.bottomright, CONN_W
-    )

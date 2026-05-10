@@ -99,24 +99,27 @@ def compute_percentage(part: float, whole: float, decimals: int) -> float:
     return round(part * 100 / whole, decimals)
 
 
-def build_connection_path(path: list[Zone]) -> list[Connection]:
-    conn_path: list[Connection] = []
-    for i in range(0, len(path)):
-        if i == len(path) - 1:
+def build_connection_path(z_path: list[Zone]) -> list[Connection]:
+    c_path: list[Connection] = []
+    if len(z_path) == 0:
+        return c_path
+
+    for i in range(0, len(z_path)):
+        if i == len(z_path) - 1:
             break
-        zone = path[i]
-        next_zone = path[i + 1]
+        zone = z_path[i]
+        next_zone = z_path[i + 1]
         if next_zone.zone_type is ZoneType.CONNECTION:
-            next_zone = path[i + 2]
+            next_zone = z_path[i + 2]
         conn: Connection | None = None
         for c in zone.connections:
             if c.zone_b is next_zone or c.zone_a is next_zone:
                 conn = c
         if conn is None:
             continue
-        conn_path.append(conn)
+        c_path.append(conn)
         i += 1
-    return conn_path
+    return c_path
 
 
 def get_zone_color(zone: Zone) -> tuple[int, int, int]:

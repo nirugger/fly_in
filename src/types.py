@@ -82,10 +82,13 @@ class Path(TypedDict):
         cap: Maximum path capacity.
         cost: Total cost of the path.
     """
-    path: list[Zone]
+    path_id: int
+    z_path: list[Zone]
+    c_path: list[Connection]
     cap: int
     cost: int
-    restricted: int
+
+    # restricted: int
 
 
 @dataclass

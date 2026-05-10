@@ -188,7 +188,7 @@ class Parser:
                     for i, line in enumerate(f.read().split('\n'))
                     if line.strip() and not line.strip().startswith('#')
                 ]
-        
+
         except KeyError:
             print(f"{RED}[ERROR]:{RESET} "
                   f"map not found in registry")
@@ -207,7 +207,6 @@ class Parser:
             print(f"{RED}[ERROR]:{RESET} "
                   f"couldn't write to {self.path}: {e}")
             sys.exit(1)
-
 
     def _parse_lines(self) -> None:
         """Parse all lines extracted from the configuration file.

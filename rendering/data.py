@@ -24,13 +24,16 @@ RESOLUTION: tuple[int, int] = (1920, 1080)
 SCREEN_COLOR: tuple[int, int, int] = (5, 10, 15)
 
 ZONE_R: float = 20.0
-ZONE_R2: float = 15.0
-ZONE_W: int = 6
+ZONE_R2: float = 8.0
+ZONE_W: int = 5
+ZONE_W2: int = 3
 CONN_W: int = 3
 DRONE_R: float = 5.0
+DRONE_W: int = 4
 SPAN: float = 15.0
 
 TEXT_COLOR: tuple[int, int, int] = (242, 242, 242)
+HOVER_COLOR: tuple[int, int, int] = (242, 242, 242)
 INVALID_COLOR: tuple[int, int, int] = (110, 110, 120)
 CONN_COLOR: tuple[int, int, int] = (42, 42, 42)
 DRONE_COLOR: tuple[int, int, int] = (220, 110, 110)
