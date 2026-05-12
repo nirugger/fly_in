@@ -65,6 +65,7 @@ class Menu:
             pygame.display.flip()
 
     def _handle_menu_state(self) -> None:
+        """Render the current menu state and its buttons."""
         if self.state is MenuState.INVALID_MAP:
             self.x_maps.add(self.last_result)
 

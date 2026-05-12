@@ -1,3 +1,4 @@
+"""Menu drawing helpers for the Fly In interface."""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -14,6 +15,7 @@ import pygame
 
 
 def title(menu: Menu) -> None:
+    """Render the main menu title."""
     height = menu.menu_font.get_height()
     menu.buttons['title'] = draw_label(
         menu.screen, "FLY IN", menu.center,
@@ -23,12 +25,14 @@ def title(menu: Menu) -> None:
 
 
 def error_msg(menu: Menu) -> None:
+    """Render an error message when no valid map can be selected."""
     draw_label(menu.screen, "[ERROR]: no path was found for this map",
                menu.center, menu.menu_font, COLORS['red'],
                offset=(0, -(menu.y_off)))
 
 
 def draw_back(menu: Menu) -> pygame.Rect:
+    """Render the back button and return its bounds."""
     return draw_label(
         menu.screen, "BACK", menu.center, menu.menu_font, TEXT_COLOR,
         offset=(0, menu.y_off * 6)
@@ -36,7 +40,7 @@ def draw_back(menu: Menu) -> pygame.Rect:
 
 
 def main_menu(menu: Menu) -> None:
-
+    """Render the main menu options."""
     menu.buttons['start'] = draw_label(
         menu.screen, "START", menu.center, menu.menu_font, TEXT_COLOR
         )
@@ -48,7 +52,7 @@ def main_menu(menu: Menu) -> None:
 
 
 def categories(menu: Menu) -> None:
-
+    """Render the map category selection screen."""
     menu.buttons['easy'] = draw_label(
         menu.screen, "EASY", menu.center, menu.menu_font, TEXT_COLOR
         )
@@ -72,7 +76,7 @@ def categories(menu: Menu) -> None:
 
 
 def map_easy(menu: Menu) -> None:
-
+    """Render the easy maps selection screen."""
     rect = draw_label(
         menu.screen, "LINEAR PATH", menu.center, menu.menu_font,
         TEXT_COLOR if MAPS['01_e'] not in menu.x_maps else INVALID_COLOR
@@ -100,7 +104,7 @@ def map_easy(menu: Menu) -> None:
 
 
 def map_medium(menu: Menu) -> None:
-
+    """Render the medium maps selection screen."""
     rect = draw_label(
         menu.screen, "DEAD END TRAP", menu.center, menu.menu_font,
         TEXT_COLOR if MAPS['01_m'] not in menu.x_maps else INVALID_COLOR
@@ -128,7 +132,7 @@ def map_medium(menu: Menu) -> None:
 
 
 def map_hard(menu: Menu) -> None:
-
+    """Render the hard maps selection screen."""
     rect = draw_label(
         menu.screen, "MAZE NIGHTMARE", menu.center, menu.menu_font,
         TEXT_COLOR if MAPS['01_h'] not in menu.x_maps else INVALID_COLOR
@@ -164,7 +168,7 @@ def map_hard(menu: Menu) -> None:
 
 
 def map_custom(menu: Menu) -> None:
-
+    """Render the custom maps selection screen."""
     rect = draw_label(
         menu.screen, "HIGHWAY JAM", menu.center, menu.menu_font,
         TEXT_COLOR if MAPS['01_c'] not in menu.x_maps else INVALID_COLOR
@@ -203,6 +207,7 @@ def underline_hovered(
         menu: Menu,
         random_color: bool = False,
         ) -> None:
+    """Underline the menu item currently under the mouse cursor."""
     special_color = get_random_color() if random_color else TEXT_COLOR
     hovered = h_button(menu)
     if hovered and hovered != "title":

@@ -61,6 +61,7 @@ class Zone:
         self.current_drones: list[Drone] = []
         self.residual = max_drones
         self.prev: Zone | None = None
+        self.has_restricted_in_path: bool = False
 
     def movement_cost(self) -> int:
         """Return the turn cost to move into this zone.

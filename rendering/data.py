@@ -13,6 +13,8 @@ ZONE_W2: int = 3
 CONN_W: int = 3
 DRONE_R: float = 5.0
 DRONE_W: int = 4
+
+MAX_D_IN_ORBIT: int = 12
 SPAN: float = 15.0
 
 TEXT_COLOR: tuple[int, int, int] = (242, 242, 242)

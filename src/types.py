@@ -88,8 +88,7 @@ class Path(TypedDict):
     c_path: list[Connection]
     cap: int
     cost: int
-
-    # restricted: int
+    restricted: int
 
 
 @dataclass

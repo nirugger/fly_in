@@ -35,6 +35,7 @@ class Renderer:
         Args:
             screen (pygame.Surface): display surface.
             graph (Graph): simulation graph containing zones and drones.
+            paths (list[Path]): list of path found by the pathfinder.
         """
         self.screen = screen
         self.graph = graph
@@ -53,6 +54,7 @@ class Renderer:
         self.z_positions, self.c_positions = self._compute_layout()
 
         self.drones_action_map: dict[str, list[Drone]] = {}
+        self.orbits: list[list[Drone]] = []
         self.orbit_offset: float = 0.0
         self.orbit_maxxed: bool = False
         self.drone_angles: dict[int, float] = {
@@ -245,7 +247,7 @@ class Renderer:
             self,
             dt: float
             ) -> None:
-
+        """Update renderer state for the current frame and turn."""
         if not self.paused:
             self.current_turn += self.speed * dt
 

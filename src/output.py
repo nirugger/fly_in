@@ -1,3 +1,8 @@
+"""Output writer for the Fly In simulation.
+
+This module formats and writes the per-turn drone movements to a text
+file for the currently selected map.
+"""
 
 from parser import RED, YELLOW, RESET
 
@@ -65,7 +70,6 @@ def write_output(
     The output excludes start hub positions and shows the
     destination zone for each drone at every simulated turn.
     """
-
     turn_map = _build_turn_map(drones)
 
     try:

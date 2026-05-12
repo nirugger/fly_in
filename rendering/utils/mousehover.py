@@ -1,3 +1,4 @@
+"""Mouse hover helper functions for renderer interactions."""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -19,14 +20,7 @@ def h_zones(
         rend: Renderer,
         zone_radius: float
         ) -> list[Zone]:
-    """Return the zone currently under the mouse cursor.
-
-    Args:
-        ZONE_R (float): radius used for hit detection.
-
-    Returns:
-        Zone | None: hovered zone or None if none is hovered.
-    """
+    """Return the zones currently under the mouse cursor."""
     mouse_x, mouse_y = pygame.mouse.get_pos()
     z_lst: list[Zone] = []
     for zone, pos in rend.z_positions.items():
@@ -43,6 +37,7 @@ def h_drones(
         rend: Renderer,
         drone_radius: float,
         ) -> list[Drone]:
+    """Return the drones currently under the mouse cursor."""
     mouse_x, mouse_y = pygame.mouse.get_pos()
     d_list: list[Drone] = []
     for drone in rend.drones:
@@ -50,9 +45,6 @@ def h_drones(
         if d_pos is None:
             continue
 
-    # for zone, pos in rend.z_positions.items():
-    #     if zone.zone_type is ZoneType.CONNECTION:
-    #         continue
         rx = mouse_x - d_pos[0]
         ry = mouse_y - d_pos[1]
         if math.sqrt(rx*rx + ry*ry) < drone_radius:
@@ -64,14 +56,7 @@ def h_connections(
         rend: Renderer,
         threshold: float = 8.0
         ) -> list[Connection]:
-    """Return the connection currently under the mouse cursor.
-
-    Args:
-        threshold (float): max pixel distance from the line.
-
-    Returns:
-        Connection | None: hovered connection or None if none is hovered.
-    """
+    """Return the connections currently under the mouse cursor."""
     mx, my = pygame.mouse.get_pos()
 
     c_lst: list[Connection] = []
@@ -110,11 +95,7 @@ def h_connections(
 
 
 def h_buttons(rend: Renderer) -> list[str] | None:
-    """Return the currently hovered HUD button name.
-
-    Returns:
-        str | None: hovered button id or None.
-    """
+    """Return the list of HUD buttons currently hovered by the mouse."""
     mx, my = pygame.mouse.get_pos()
     buttons: list[str] = []
     for name, button in rend.buttons.items():
@@ -126,11 +107,7 @@ def h_buttons(rend: Renderer) -> list[str] | None:
 
 
 def h_button(menu: Menu) -> str | None:
-    """Return the name of the button currently under the mouse.
-
-    Returns:
-        str | None: button key when hovered, otherwise None.
-    """
+    """Return the name of the menu button currently under the mouse."""
     mx, my = pygame.mouse.get_pos()
     for name, button in menu.buttons.items():
         if button.collidepoint(mx, my):

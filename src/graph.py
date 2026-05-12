@@ -159,6 +159,7 @@ class Graph:
 
         Args:
             zone (Zone): source zone to query.
+            conn_list (list[Connection]): the list of all connections.
 
         Returns:
             list[Zone]: list of adjacent zones.

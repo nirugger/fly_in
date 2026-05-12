@@ -1,3 +1,4 @@
+"""Shared rendering helper functions for the Pygame renderer."""
 from rendering.data import COLORS
 from src.drone import Drone
 from src.zone import Zone, ZoneType
@@ -15,7 +16,9 @@ def get_occupancy_at_turn(
     """Return the list of drones currently occupying a zone.
 
     Args:
+        t (int): the turn of inspection.
         zone (Zone): zone to inspect.
+        drone_list (list[Drone]): drones to check.
 
     Returns:
         list[Drone]: drones at the specified zone.
@@ -33,22 +36,18 @@ def average_turn_per_drone(
         previous_cost: int = 0,
         total: bool = False
         ) -> float:
-
+    """Compute the average number of turns per drone."""
     if current_t == 0:
         return 0
 
     if total:
         return sum(
             max(turn for turn, _ in drone.path)
-            # - min(t for t, z in drone.path if not z.is_start)
-            # + 1
             for drone in drone_list
         ) / len(drone_list)
 
     return sum(
         max(turn for turn, _ in drone.path if turn <= current_t)
-        # - min(t for t, z in drone.path if not z.is_start)
-        # + 1
         for drone in drone_list
     ) / len(drone_list)
 
@@ -57,7 +56,7 @@ def total_turn_cost(lst: list[Drone],
                     ot: int,
                     cc: int = 0
                     ) -> int:
-
+    """Calculate the total movement cost for one turn."""
     c: int = cc
     for d in lst:
         for t, z in d.path:
@@ -67,15 +66,12 @@ def total_turn_cost(lst: list[Drone],
 
 
 def compute_percentage(part: float, whole: float, decimals: int) -> float:
-    """Return the completion percentage of the current simulation.
-
-    Returns:
-        float: percentage of current turn over maximum turn.
-    """
+    """Return the simulation completion percentage."""
     return round(part * 100 / whole, decimals)
 
 
 def build_connection_path(z_path: list[Zone]) -> list[Connection]:
+    """Build connection path from zone path."""
     c_path: list[Connection] = []
     if len(z_path) == 0:
         return c_path
@@ -99,14 +95,7 @@ def build_connection_path(z_path: list[Zone]) -> list[Connection]:
 
 
 def get_zone_color(zone: Zone) -> tuple[int, int, int]:
-    """Resolve the display color for a zone.
-
-    Args:
-        zone (Zone): zone to color.
-
-    Returns:
-        tuple[int, int, int]: RGB color value.
-    """
+    """Resolve the display color for a zone."""
     string = zone.color
     if string == "None":
         return (210, 210, 215)
@@ -121,20 +110,14 @@ def get_zone_color(zone: Zone) -> tuple[int, int, int]:
 
 
 def get_color_from_string(string: str) -> tuple[int, int, int]:
-    """Generate a deterministic RGB color from a string.
-
-    Args:
-        string (str): input string to hash.
-
-    Returns:
-        tuple[int, int, int]: derived RGB color.
-    """
+    """Generate a deterministic RGB color from a string."""
     digested = hashlib.md5(string.encode()).digest()
     color = (digested[0], digested[1], digested[2])
     return color
 
 
 def get_random_color() -> tuple[int, int, int]:
+    """Return a random RGB color tuple."""
     return ((random.randint(0, 255),
             random.randint(0, 255),
             random.randint(0, 255)))

@@ -1,3 +1,4 @@
+"""Hover detection and highlight rendering helpers."""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -21,7 +22,7 @@ import pygame
 
 
 def draw_hovered(rend: Renderer) -> None:
-
+    """Render hover effects for hovered simulation entities."""
     if rend.current_turn >= rend.max_turn:
         return
 
@@ -50,6 +51,7 @@ def hovered_drones(
         lst: list[Drone],
         color: tuple[int, int, int]
         ) -> None:
+    """Draw hover tooltips for hovered drones."""
     offset: int = 0
     for drone in lst:
 
@@ -69,7 +71,7 @@ def hovered_connections(
         lst: list[Connection],
         color: tuple[int, int, int]
         ) -> None:
-
+    """Draw hover tooltips for hovered connections."""
     offset: int = 0
     for connection in lst:
 
@@ -95,6 +97,7 @@ def hovered_zones(
         lst: list[Zone],
         color: tuple[int, int, int]
         ) -> None:
+    """Draw hover tooltips for hovered zones and their neighbors."""
     offset: int = 0
     for zone in lst:
         start = rend.z_positions.get(zone)
@@ -129,7 +132,7 @@ def hovered_paths(
         hovered: tuple[list[Drone], list[Zone], list[Connection]],
         color: tuple[int, int, int]
         ) -> None:
-
+    """Draw hover overlays for paths while path view is active."""
     offset: int = 0
     h_offset: int = 0
     max_w: int = 0
@@ -170,8 +173,9 @@ def hovered_paths(
                               rend.tooltip_font, p_lines,
                               pos=(30 + h_offset, 30 + offset))
 
-            offset += rend.tooltip_font.get_linesize() * len(p_lines) + 30
-            if offset + 30 > rend.screen.get_height():
+            tt_offset = rend.tooltip_font.get_linesize() * len(p_lines)
+            offset += tt_offset + 30
+            if offset + tt_offset > rend.screen.get_height():
                 offset = 0
                 h_offset += max_w + 30
 
@@ -209,8 +213,9 @@ def hovered_paths(
                                   rend.tooltip_font, p_lines,
                                   pos=(30 + h_offset, 30 + offset))
 
-                offset += rend.tooltip_font.get_linesize() * len(p_lines) + 30
-                if offset + 30 > rend.screen.get_height():
+                tt_offset = rend.tooltip_font.get_linesize() * len(p_lines)
+                offset += tt_offset + 30
+                if offset + tt_offset > rend.screen.get_height():
                     offset = 0
                     h_offset += max_w + 30
 
@@ -248,14 +253,15 @@ def hovered_paths(
                                   rend.tooltip_font, p_lines,
                                   pos=(30 + h_offset, 30 + offset))
 
-                offset += rend.tooltip_font.get_linesize() * len(p_lines) + 30
-                if offset + 30 > rend.screen.get_height():
+                tt_offset = rend.tooltip_font.get_linesize() * len(p_lines)
+                offset += tt_offset + 30
+                if offset + tt_offset > rend.screen.get_height():
                     offset = 0
                     h_offset += max_w + 30
 
 
 def draw_info(rend: Renderer) -> None:
-
+    """Render the HUD info panel for the current renderer state."""
     width, _ = rend.hud_font_bold.size("DATA")
     screen_w = rend.screen.get_width()
     color = get_random_color() if rend.random_color else TEXT_COLOR

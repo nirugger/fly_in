@@ -1,3 +1,4 @@
+"""Tooltip builder helpers for the Fly In renderer."""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -15,6 +16,7 @@ import rendering.utils.positions as getpos
 
 
 def drone(drone: Drone, rend: Renderer) -> list[str]:
+    """Return tooltip text lines for a hovered drone."""
     current_z = ""
     next_z = ""
     for _, z in drone.path:
@@ -31,7 +33,7 @@ def drone(drone: Drone, rend: Renderer) -> list[str]:
 
 
 def zone(zone: Zone, rend: Renderer) -> list[str]:
-
+    """Return tooltip text lines for a hovered zone."""
     drones = ""
     if rend.paused and rend.current_turn.is_integer():
         counter = 0
@@ -50,6 +52,7 @@ def zone(zone: Zone, rend: Renderer) -> list[str]:
 
 
 def neighbor(zone: Zone) -> list[str]:
+    """Return tooltip lines for a neighboring zone."""
     cost = (zone.movement_cost()
             if zone.zone_type is not ZoneType.BLOCKED
             else 'X')
@@ -59,6 +62,7 @@ def neighbor(zone: Zone) -> list[str]:
 
 
 def connection(connection: Connection) -> list[str]:
+    """Return tooltip lines for a hovered connection."""
     return [
         f"NAME : {connection.name}",
         f"ROOM : {connection.max_link_capacity}",
@@ -66,7 +70,7 @@ def connection(connection: Connection) -> list[str]:
 
 
 def path(p: Path, rend: Renderer) -> list[str]:
-
+    """Return tooltip lines for a hovered path."""
     drones_on_path: int = 0
     for d in rend.drones:
         zone_list = [i[1] for i in d.path if not i[1].is_start]
@@ -83,7 +87,7 @@ def path(p: Path, rend: Renderer) -> list[str]:
 
 
 def keys() -> list[str]:
-
+    """Return the list of key mapping hints."""
     return [
         "↑ : speed up",
         "↓ : speed down",
@@ -101,7 +105,7 @@ def keys() -> list[str]:
 
 
 def data(rend: Renderer) -> list[str]:
-
+    """Return the status panel text lines for the renderer."""
     perc = compute_percentage(rend.current_turn, rend.max_turn, 2)
     return [
         f"CURRENT TURN : {int(rend.current_turn)}",

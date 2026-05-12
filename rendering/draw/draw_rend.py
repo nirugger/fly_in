@@ -1,3 +1,4 @@
+"""Renderer draw routines for the Fly In simulation."""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -16,6 +17,7 @@ import pygame
 
 
 def drones(rend: Renderer) -> None:
+    """Draw all drones in the current simulation state."""
     for drone in rend.drones:
         pos = get_drone_position(rend, drone)
         if pos is None:
@@ -30,6 +32,7 @@ def drones(rend: Renderer) -> None:
 
 
 def zones(rend: Renderer) -> None:
+    """Draw all non-connection zones in the renderer."""
     for zone, position in rend.z_positions.items():
         if zone.zone_type is ZoneType.CONNECTION:
             continue
@@ -38,6 +41,7 @@ def zones(rend: Renderer) -> None:
 
 
 def connections(rend: Renderer) -> None:
+    """Draw the graph connections between zones."""
     for connection in rend.graph.render_grid.connections:
 
         start = rend.z_positions.get(connection.zone_a)
@@ -48,10 +52,12 @@ def connections(rend: Renderer) -> None:
 
 
 def hovered(rend: Renderer) -> None:
+    """Render tooltip highlights for hovered objects."""
     draw_hovered(rend)
 
 
 def info(rend: Renderer) -> None:
+    """Render the info panel overlay when requested."""
     draw_info(rend)
 
 

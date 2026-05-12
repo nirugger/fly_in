@@ -47,7 +47,7 @@ class FlyInSimulator:
     """
 
     def __init__(self) -> None:
-        """Initalize a FlyInSimulator."""
+        """Initialize a FlyInSimulator."""
         self.screen = pygame.display.set_mode(RESOLUTION, pygame.RESIZABLE)
         self.graph: Graph | None = None
         self.new_run: bool = True

@@ -52,33 +52,33 @@ class Pathfinder:
 
     def update_max_capacity(
             self,
-            path_capacity: Path
+            path: Path
             ) -> None:
         """Decrease capacities along the most recently discovered path.
 
         Args:
-            path_capacity (Path): path information containing capacity.
+            path (Path): path information containing capacity.
         """
-        path = path_capacity['z_path']
-        capacity = path_capacity['cap']
+        z_path = path['z_path']
+        capacity = path['cap']
 
-        for i in range(1, len(path) - 1):
+        for i in range(1, len(z_path) - 1):
 
-            if path[i].zone_type is ZoneType.CONNECTION:
+            if z_path[i].zone_type is ZoneType.CONNECTION:
                 continue
 
-            next_valid_zone = path[i + 1]
+            next_valid_zone = z_path[i + 1]
             if next_valid_zone.zone_type is ZoneType.CONNECTION:
-                next_valid_zone = path[i + 2]
+                next_valid_zone = z_path[i + 2]
 
             connection = self.graph.get_connection_from_zones(
-                path[i], next_valid_zone
+                z_path[i], next_valid_zone
             )
 
             if connection:
                 connection.residual -= capacity
-            if not path[i].is_start and not path[i].is_end:
-                path[i].residual -= capacity
+            if not z_path[i].is_start and not z_path[i].is_end:
+                z_path[i].residual -= capacity
 
     def get_path_capacity(
             self,
@@ -130,7 +130,7 @@ class Pathfinder:
             c_path=build_connection_path(path[::-1]),
             cap=self.get_path_capacity(path),
             cost=len(path) - 1,
-            # restricted=self._has_restricted(path[::-1])
+            restricted=self._has_restricted(path[::-1])
         ))
 
     def find_next_shortest_path(self) -> bool:

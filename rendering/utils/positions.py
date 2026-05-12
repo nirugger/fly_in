@@ -1,3 +1,4 @@
+"""Rendering position helpers for drone and zone layout."""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -14,12 +15,7 @@ import math
 
 
 def update_drones_action_map(rend: Renderer) -> None:
-    """Calculate drone state counts for the current turn.
-
-    Returns:
-        dict[str, int]: counts for waiting, prepping, moving, and
-            arrived drones.
-    """
+    """Calculate and store drone state counts for the current turn."""
     waiting: list[Drone] = []
     prepping: list[Drone] = []
     moving: list[Drone] = []
@@ -66,10 +62,11 @@ def update_angles_and_orbit(
         rend: Renderer,
         dt: float
         ) -> None:
-
+    """Update drone orbital angles and orbit state each frame."""
     for drone in rend.drones:
+        mult = 21 / drone.drones_in_zones if drone.drones_in_zones < 8 else 1.5
         rend.drone_angles[drone.drone_id] += (
-            rend.speed * dt * (15 / drone.drones_in_zones)
+            rend.speed * dt * mult
         )
 
     # if rend.orbit_maxxed is False and rend.speed != 0.0:
@@ -92,14 +89,18 @@ def reset_drones_sync(
     """Reset drone synchronization state for rendering.
 
     Args:
+        rend (Renderer): the simulation rendering class.
         orbit (bool): reset orbit offsets.
         angles (bool): reset drone rotation angles.
         zones (bool): reset per-zone occupancy counters.
+        o_flag (bool): current orbit flag.
+        orbit_offset (float): current orbit offset.
     """
-
     if orbit is True:
         rend.orbit_offset = orbit_offset
         rend.orbit_maxxed = o_flag
+        for d in rend.drones:
+            d.orbit_offset = 0
 
     for drone in rend.drones:
         if angles is True:
@@ -115,6 +116,7 @@ def get_drone_position(
     """Compute the current screen position of a drone.
 
     Args:
+        rend (Renderer): the simulation rendering class.
         drone (Drone): drone to position.
 
     Returns:
@@ -145,8 +147,17 @@ def get_drone_position(
                 and later_next_turn(rend, d) is zone_a
             ]
 
+            drone_offset: int = 0
+            counter: int = 1
+            max_in_orbit: int = 12
             for wd in waiting_drones:
                 wd.drones_in_zones = len(waiting_drones)
+                wd.orbit_offset = drone_offset
+                counter += 1
+                if counter % max_in_orbit == 0:
+                    drone_offset += 14
+                    max_in_orbit = max_in_orbit * 7 // 4
+                    counter = 0
 
             return calculate_orbit(
                 rend=rend,
@@ -154,9 +165,9 @@ def get_drone_position(
                 drone_list=waiting_drones,
                 center_x=zone_a_pos[0],
                 center_y=zone_a_pos[1],
-                mult=1.5 if len(waiting_drones) > 1 else 2.0,
+                mult=1.5 if len(waiting_drones) > 12 else 2.0,
                 waiting=True,
-                single=False if len(waiting_drones) > 1 else True
+                single=False if len(waiting_drones) > 12 else True
             )
 
         else:
@@ -242,6 +253,7 @@ def calculate_orbit(
     """Compute a drone position on an orbital layout.
 
     Args:
+        rend (Renderer): the simulation rendering class.
         drone (Drone): drone being positioned.
         drone_list (list[Drone]): other drones sharing the same space.
         center_x (int): center X coordinate.
@@ -254,15 +266,17 @@ def calculate_orbit(
         tuple[int, int]: screen coordinates for the drone.
     """
     i = drone_list.index(drone)
+    ds_in_orbit = [d for d in drone_list
+                   if d.orbit_offset == drone.orbit_offset]
     angle = (
         rend.drone_angles[drone.drone_id]
-        + ((2 * math.pi / len(drone_list)) * i)
+        + ((2 * math.pi / len(ds_in_orbit)) * i)
     )
 
     orbit_r = ZONE_R * mult
     if waiting is True:
         if single is False:
-            orbit_r += rend.orbit_offset
+            orbit_r += drone.orbit_offset
 
         # waiting drones rotate counter clockwise
         x = center_x - int(orbit_r * math.cos(angle))
@@ -281,6 +295,7 @@ def position_this_turn(
     """Return the zone of a drone at the current turn.
 
     Args:
+        rend (Renderer): the simulation rendering class.
         drone (Drone): drone to query.
 
     Returns:
@@ -296,6 +311,7 @@ def position_next_turn(
     """Return the zone of a drone on the next turn.
 
     Args:
+        rend (Renderer): the simulation rendering class.
         drone (Drone): drone to query.
 
     Returns:
@@ -311,6 +327,7 @@ def later_next_turn(
     """Return the zone of a drone at the turn after the next.
 
     Args:
+        rend (Renderer): the simulation rendering class.
         drone (Drone): drone to query.
 
     Returns:

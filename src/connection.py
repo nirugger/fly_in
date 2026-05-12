@@ -29,6 +29,7 @@ class Connection:
         self.residual = max_link_capacity
         self.name = f"{self.zone_a.name}-{self.zone_b.name}"
         self._init_zone_c()
+        self.has_restricted_in_path: bool = False
 
     def _init_zone_c(self) -> None:
         """Initialize the intermediate connection zone for restricted edges."""
