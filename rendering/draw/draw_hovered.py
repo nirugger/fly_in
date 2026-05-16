@@ -99,6 +99,7 @@ def hovered_zones(
         ) -> None:
     """Draw hover tooltips for hovered zones and their neighbors."""
     offset: int = 0
+    y_offset: int = 0
     for zone in lst:
         start = rend.z_positions.get(zone)
         if start is None:
@@ -123,7 +124,7 @@ def hovered_zones(
 
         draw.draw_tooltip(rend.screen, color,
                           rend.tooltip_font, z_lines,
-                          pos=(30, 30 + offset))
+                          pos=(30 + y_offset, 30 + offset))
         offset += rend.tooltip_font.get_linesize() * len(z_lines) + 30
 
 
@@ -175,7 +176,7 @@ def hovered_paths(
 
             tt_offset = rend.tooltip_font.get_linesize() * len(p_lines)
             offset += tt_offset + 30
-            if offset + tt_offset > rend.screen.get_height():
+            if offset + tt_offset + 100 > rend.screen.get_height():
                 offset = 0
                 h_offset += max_w + 30
 
@@ -215,7 +216,7 @@ def hovered_paths(
 
                 tt_offset = rend.tooltip_font.get_linesize() * len(p_lines)
                 offset += tt_offset + 30
-                if offset + tt_offset > rend.screen.get_height():
+                if offset + tt_offset + 100 > rend.screen.get_height():
                     offset = 0
                     h_offset += max_w + 30
 
@@ -255,7 +256,7 @@ def hovered_paths(
 
                 tt_offset = rend.tooltip_font.get_linesize() * len(p_lines)
                 offset += tt_offset + 30
-                if offset + tt_offset > rend.screen.get_height():
+                if offset + tt_offset + 100 > rend.screen.get_height():
                     offset = 0
                     h_offset += max_w + 30
 

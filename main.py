@@ -26,7 +26,3 @@ if __name__ == "__main__":
 
     finally:
         print("\n\nDrones are dangerous.\n\n")
-
-    # pygame.init()
-    # simulator = FlyInSimulator()
-    # simulator.run()
